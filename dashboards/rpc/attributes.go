@@ -1,0 +1,906 @@
+package rpc
+
+
+
+
+// The [error codes] of the Connect request. Error codes are always string values
+//
+// [error codes]: https://connectrpc.com//docs/protocol/#error-codes
+type AttrConnectRpcErrorCode string // rpc.connect_rpc.error_code
+
+func (AttrConnectRpcErrorCode) Development() {}
+func (AttrConnectRpcErrorCode) Recommended() {}
+func (AttrConnectRpcErrorCode) Key() string { return "rpc_connect_rpc_error_code" }
+func (a AttrConnectRpcErrorCode) Value() string { return string(a) }
+
+const ConnectRpcErrorCodeCancelled AttrConnectRpcErrorCode = "cancelled"
+const ConnectRpcErrorCodeUnknown AttrConnectRpcErrorCode = "unknown"
+const ConnectRpcErrorCodeInvalidArgument AttrConnectRpcErrorCode = "invalid_argument"
+const ConnectRpcErrorCodeDeadlineExceeded AttrConnectRpcErrorCode = "deadline_exceeded"
+const ConnectRpcErrorCodeNotFound AttrConnectRpcErrorCode = "not_found"
+const ConnectRpcErrorCodeAlreadyExists AttrConnectRpcErrorCode = "already_exists"
+const ConnectRpcErrorCodePermissionDenied AttrConnectRpcErrorCode = "permission_denied"
+const ConnectRpcErrorCodeResourceExhausted AttrConnectRpcErrorCode = "resource_exhausted"
+const ConnectRpcErrorCodeFailedPrecondition AttrConnectRpcErrorCode = "failed_precondition"
+const ConnectRpcErrorCodeAborted AttrConnectRpcErrorCode = "aborted"
+const ConnectRpcErrorCodeOutOfRange AttrConnectRpcErrorCode = "out_of_range"
+const ConnectRpcErrorCodeUnimplemented AttrConnectRpcErrorCode = "unimplemented"
+const ConnectRpcErrorCodeInternal AttrConnectRpcErrorCode = "internal"
+const ConnectRpcErrorCodeUnavailable AttrConnectRpcErrorCode = "unavailable"
+const ConnectRpcErrorCodeDataLoss AttrConnectRpcErrorCode = "data_loss"
+const ConnectRpcErrorCodeUnauthenticated AttrConnectRpcErrorCode = "unauthenticated"
+
+
+
+
+// Connect request metadata, `<key>` being the normalized Connect Metadata key (lowercase), the value being the metadata values.
+//
+// Instrumentations SHOULD require an explicit configuration of which metadata values are to be captured.
+// Including all request metadata values can be a security risk - explicit configuration helps avoid leaking sensitive information.
+//
+// For example, a property `my-custom-key` with value `["1.2.3.4", "1.2.3.5"]` SHOULD be recorded as
+// the `rpc.connect_rpc.request.metadata.my-custom-key` attribute with value `["1.2.3.4", "1.2.3.5"]`
+type AttrConnectRpcRequestMetadata string // rpc.connect_rpc.request.metadata
+
+func (AttrConnectRpcRequestMetadata) Development() {}
+func (AttrConnectRpcRequestMetadata) Recommended() {}
+func (AttrConnectRpcRequestMetadata) Key() string { return "rpc_connect_rpc_request_metadata" }
+func (a AttrConnectRpcRequestMetadata) Value() string { return string(a) }
+
+
+
+
+
+// Connect response metadata, `<key>` being the normalized Connect Metadata key (lowercase), the value being the metadata values.
+//
+// Instrumentations SHOULD require an explicit configuration of which metadata values are to be captured.
+// Including all response metadata values can be a security risk - explicit configuration helps avoid leaking sensitive information.
+//
+// For example, a property `my-custom-key` with value `"attribute_value"` SHOULD be recorded as
+// the `rpc.connect_rpc.response.metadata.my-custom-key` attribute with value `["attribute_value"]`
+type AttrConnectRpcResponseMetadata string // rpc.connect_rpc.response.metadata
+
+func (AttrConnectRpcResponseMetadata) Development() {}
+func (AttrConnectRpcResponseMetadata) Recommended() {}
+func (AttrConnectRpcResponseMetadata) Key() string { return "rpc_connect_rpc_response_metadata" }
+func (a AttrConnectRpcResponseMetadata) Value() string { return string(a) }
+
+
+
+
+
+// gRPC request metadata, `<key>` being the normalized gRPC Metadata key (lowercase), the value being the metadata values.
+//
+// Instrumentations SHOULD require an explicit configuration of which metadata values are to be captured.
+// Including all request metadata values can be a security risk - explicit configuration helps avoid leaking sensitive information.
+//
+// For example, a property `my-custom-key` with value `["1.2.3.4", "1.2.3.5"]` SHOULD be recorded as
+// `rpc.grpc.request.metadata.my-custom-key` attribute with value `["1.2.3.4", "1.2.3.5"]`
+type AttrGrpcRequestMetadata string // rpc.grpc.request.metadata
+
+func (AttrGrpcRequestMetadata) Development() {}
+func (AttrGrpcRequestMetadata) Recommended() {}
+func (AttrGrpcRequestMetadata) Key() string { return "rpc_grpc_request_metadata" }
+func (a AttrGrpcRequestMetadata) Value() string { return string(a) }
+
+
+
+
+
+// gRPC response metadata, `<key>` being the normalized gRPC Metadata key (lowercase), the value being the metadata values.
+//
+// Instrumentations SHOULD require an explicit configuration of which metadata values are to be captured.
+// Including all response metadata values can be a security risk - explicit configuration helps avoid leaking sensitive information.
+//
+// For example, a property `my-custom-key` with value `["attribute_value"]` SHOULD be recorded as
+// the `rpc.grpc.response.metadata.my-custom-key` attribute with value `["attribute_value"]`
+type AttrGrpcResponseMetadata string // rpc.grpc.response.metadata
+
+func (AttrGrpcResponseMetadata) Development() {}
+func (AttrGrpcResponseMetadata) Recommended() {}
+func (AttrGrpcResponseMetadata) Key() string { return "rpc_grpc_response_metadata" }
+func (a AttrGrpcResponseMetadata) Value() string { return string(a) }
+
+
+
+
+
+// The [numeric status code] of the gRPC request
+//
+// [numeric status code]: https://github.com/grpc/grpc/blob/v1.33.2/doc/statuscodes.md
+type AttrGrpcStatusCode string // rpc.grpc.status_code
+
+func (AttrGrpcStatusCode) Development() {}
+func (AttrGrpcStatusCode) Recommended() {}
+func (AttrGrpcStatusCode) Key() string { return "rpc_grpc_status_code" }
+func (a AttrGrpcStatusCode) Value() string { return string(a) }
+
+const GrpcStatusCodeOk AttrGrpcStatusCode = "0"
+const GrpcStatusCodeCancelled AttrGrpcStatusCode = "1"
+const GrpcStatusCodeUnknown AttrGrpcStatusCode = "2"
+const GrpcStatusCodeInvalidArgument AttrGrpcStatusCode = "3"
+const GrpcStatusCodeDeadlineExceeded AttrGrpcStatusCode = "4"
+const GrpcStatusCodeNotFound AttrGrpcStatusCode = "5"
+const GrpcStatusCodeAlreadyExists AttrGrpcStatusCode = "6"
+const GrpcStatusCodePermissionDenied AttrGrpcStatusCode = "7"
+const GrpcStatusCodeResourceExhausted AttrGrpcStatusCode = "8"
+const GrpcStatusCodeFailedPrecondition AttrGrpcStatusCode = "9"
+const GrpcStatusCodeAborted AttrGrpcStatusCode = "10"
+const GrpcStatusCodeOutOfRange AttrGrpcStatusCode = "11"
+const GrpcStatusCodeUnimplemented AttrGrpcStatusCode = "12"
+const GrpcStatusCodeInternal AttrGrpcStatusCode = "13"
+const GrpcStatusCodeUnavailable AttrGrpcStatusCode = "14"
+const GrpcStatusCodeDataLoss AttrGrpcStatusCode = "15"
+const GrpcStatusCodeUnauthenticated AttrGrpcStatusCode = "16"
+
+
+
+
+// `error.code` property of response if it is an error response
+type AttrJsonrpcErrorCode string // rpc.jsonrpc.error_code
+
+func (AttrJsonrpcErrorCode) Development() {}
+func (AttrJsonrpcErrorCode) Recommended() {}
+func (AttrJsonrpcErrorCode) Key() string { return "rpc_jsonrpc_error_code" }
+func (a AttrJsonrpcErrorCode) Value() string { return string(a) }
+
+
+
+
+
+// `error.message` property of response if it is an error response
+type AttrJsonrpcErrorMessage string // rpc.jsonrpc.error_message
+
+func (AttrJsonrpcErrorMessage) Development() {}
+func (AttrJsonrpcErrorMessage) Recommended() {}
+func (AttrJsonrpcErrorMessage) Key() string { return "rpc_jsonrpc_error_message" }
+func (a AttrJsonrpcErrorMessage) Value() string { return string(a) }
+
+
+
+
+
+// `id` property of request or response. Since protocol allows id to be int, string, `null` or missing (for notifications), value is expected to be cast to string for simplicity. Use empty string in case of `null` value. Omit entirely if this is a notification
+type AttrJsonrpcRequestId string // rpc.jsonrpc.request_id
+
+func (AttrJsonrpcRequestId) Development() {}
+func (AttrJsonrpcRequestId) Recommended() {}
+func (AttrJsonrpcRequestId) Key() string { return "rpc_jsonrpc_request_id" }
+func (a AttrJsonrpcRequestId) Value() string { return string(a) }
+
+
+
+
+
+// Protocol version as in `jsonrpc` property of request/response. Since JSON-RPC 1.0 doesn't specify this, the value can be omitted
+type AttrJsonrpcVersion string // rpc.jsonrpc.version
+
+func (AttrJsonrpcVersion) Development() {}
+func (AttrJsonrpcVersion) Recommended() {}
+func (AttrJsonrpcVersion) Key() string { return "rpc_jsonrpc_version" }
+func (a AttrJsonrpcVersion) Value() string { return string(a) }
+
+
+
+
+
+// Compressed size of the message in bytes
+type AttrMessageCompressedSize string // rpc.message.compressed_size
+
+func (AttrMessageCompressedSize) Development() {}
+func (AttrMessageCompressedSize) Recommended() {}
+func (AttrMessageCompressedSize) Key() string { return "rpc_message_compressed_size" }
+func (a AttrMessageCompressedSize) Value() string { return string(a) }
+
+
+
+
+
+// MUST be calculated as two different counters starting from `1` one for sent messages and one for received message.
+// This way we guarantee that the values will be consistent between different implementations
+type AttrMessageId string // rpc.message.id
+
+func (AttrMessageId) Development() {}
+func (AttrMessageId) Recommended() {}
+func (AttrMessageId) Key() string { return "rpc_message_id" }
+func (a AttrMessageId) Value() string { return string(a) }
+
+
+
+
+
+// Whether this is a received or sent message
+type AttrMessageType string // rpc.message.type
+
+func (AttrMessageType) Development() {}
+func (AttrMessageType) Recommended() {}
+func (AttrMessageType) Key() string { return "rpc_message_type" }
+func (a AttrMessageType) Value() string { return string(a) }
+
+const MessageTypeSent AttrMessageType = "SENT"
+const MessageTypeReceived AttrMessageType = "RECEIVED"
+
+
+
+
+// Uncompressed size of the message in bytes
+type AttrMessageUncompressedSize string // rpc.message.uncompressed_size
+
+func (AttrMessageUncompressedSize) Development() {}
+func (AttrMessageUncompressedSize) Recommended() {}
+func (AttrMessageUncompressedSize) Key() string { return "rpc_message_uncompressed_size" }
+func (a AttrMessageUncompressedSize) Value() string { return string(a) }
+
+
+
+
+
+// The name of the (logical) method being called, must be equal to the $method part in the span name.
+// This is the logical name of the method from the RPC interface perspective, which can be different from the name of any implementing method/function. The `code.function.name` attribute may be used to store the latter (e.g., method actually executing the call on the server side, RPC client stub method on the client side)
+type AttrMethod string // rpc.method
+
+func (AttrMethod) Development() {}
+func (AttrMethod) Recommended() {}
+func (AttrMethod) Key() string { return "rpc_method" }
+func (a AttrMethod) Value() string { return string(a) }
+
+
+
+
+
+// The full (logical) name of the service being called, including its package name, if applicable.
+// This is the logical name of the service from the RPC interface perspective, which can be different from the name of any implementing class. The `code.namespace` attribute may be used to store the latter (despite the attribute name, it may include a class name; e.g., class with method actually executing the call on the server side, RPC client stub class on the client side)
+type AttrService string // rpc.service
+
+func (AttrService) Development() {}
+func (AttrService) Recommended() {}
+func (AttrService) Key() string { return "rpc_service" }
+func (a AttrService) Value() string { return string(a) }
+
+
+
+
+
+// A string identifying the remoting system. See below for a list of well-known identifiers
+type AttrSystem string // rpc.system
+
+func (AttrSystem) Development() {}
+func (AttrSystem) Recommended() {}
+func (AttrSystem) Key() string { return "rpc_system" }
+func (a AttrSystem) Value() string { return string(a) }
+
+const SystemGrpc AttrSystem = "grpc"
+const SystemJavaRmi AttrSystem = "java_rmi"
+const SystemDotnetWcf AttrSystem = "dotnet_wcf"
+const SystemApacheDubbo AttrSystem = "apache_dubbo"
+const SystemConnectRpc AttrSystem = "connect_rpc"
+
+
+
+/* State {
+    name: "attr.go.j2",
+    current_block: None,
+    auto_escape: None,
+    ctx: {
+        "ctx": {
+            "attributes": [
+                {
+                    "brief": "The [error codes](https://connectrpc.com//docs/protocol/#error-codes) of the Connect request. Error codes are always string values.",
+                    "name": "rpc.connect_rpc.error_code",
+                    "requirement_level": "recommended",
+                    "root_namespace": "rpc",
+                    "stability": "development",
+                    "type": {
+                        "members": [
+                            {
+                                "id": "cancelled",
+                                "stability": "development",
+                                "value": "cancelled",
+                            },
+                            {
+                                "id": "unknown",
+                                "stability": "development",
+                                "value": "unknown",
+                            },
+                            {
+                                "id": "invalid_argument",
+                                "stability": "development",
+                                "value": "invalid_argument",
+                            },
+                            {
+                                "id": "deadline_exceeded",
+                                "stability": "development",
+                                "value": "deadline_exceeded",
+                            },
+                            {
+                                "id": "not_found",
+                                "stability": "development",
+                                "value": "not_found",
+                            },
+                            {
+                                "id": "already_exists",
+                                "stability": "development",
+                                "value": "already_exists",
+                            },
+                            {
+                                "id": "permission_denied",
+                                "stability": "development",
+                                "value": "permission_denied",
+                            },
+                            {
+                                "id": "resource_exhausted",
+                                "stability": "development",
+                                "value": "resource_exhausted",
+                            },
+                            {
+                                "id": "failed_precondition",
+                                "stability": "development",
+                                "value": "failed_precondition",
+                            },
+                            {
+                                "id": "aborted",
+                                "stability": "development",
+                                "value": "aborted",
+                            },
+                            {
+                                "id": "out_of_range",
+                                "stability": "development",
+                                "value": "out_of_range",
+                            },
+                            {
+                                "id": "unimplemented",
+                                "stability": "development",
+                                "value": "unimplemented",
+                            },
+                            {
+                                "id": "internal",
+                                "stability": "development",
+                                "value": "internal",
+                            },
+                            {
+                                "id": "unavailable",
+                                "stability": "development",
+                                "value": "unavailable",
+                            },
+                            {
+                                "id": "data_loss",
+                                "stability": "development",
+                                "value": "data_loss",
+                            },
+                            {
+                                "id": "unauthenticated",
+                                "stability": "development",
+                                "value": "unauthenticated",
+                            },
+                        ],
+                    },
+                },
+                {
+                    "brief": "Connect request metadata, `<key>` being the normalized Connect Metadata key (lowercase), the value being the metadata values.\n",
+                    "examples": [
+                        [
+                            "1.2.3.4",
+                            "1.2.3.5",
+                        ],
+                    ],
+                    "name": "rpc.connect_rpc.request.metadata",
+                    "note": "Instrumentations SHOULD require an explicit configuration of which metadata values are to be captured.\nIncluding all request metadata values can be a security risk - explicit configuration helps avoid leaking sensitive information.\n\nFor example, a property `my-custom-key` with value `[\"1.2.3.4\", \"1.2.3.5\"]` SHOULD be recorded as\nthe `rpc.connect_rpc.request.metadata.my-custom-key` attribute with value `[\"1.2.3.4\", \"1.2.3.5\"]`\n",
+                    "requirement_level": "recommended",
+                    "root_namespace": "rpc",
+                    "stability": "development",
+                    "type": "template[string[]]",
+                },
+                {
+                    "brief": "Connect response metadata, `<key>` being the normalized Connect Metadata key (lowercase), the value being the metadata values.\n",
+                    "examples": [
+                        [
+                            "attribute_value",
+                        ],
+                    ],
+                    "name": "rpc.connect_rpc.response.metadata",
+                    "note": "Instrumentations SHOULD require an explicit configuration of which metadata values are to be captured.\nIncluding all response metadata values can be a security risk - explicit configuration helps avoid leaking sensitive information.\n\nFor example, a property `my-custom-key` with value `\"attribute_value\"` SHOULD be recorded as\nthe `rpc.connect_rpc.response.metadata.my-custom-key` attribute with value `[\"attribute_value\"]`\n",
+                    "requirement_level": "recommended",
+                    "root_namespace": "rpc",
+                    "stability": "development",
+                    "type": "template[string[]]",
+                },
+                {
+                    "brief": "gRPC request metadata, `<key>` being the normalized gRPC Metadata key (lowercase), the value being the metadata values.\n",
+                    "examples": [
+                        [
+                            "1.2.3.4",
+                            "1.2.3.5",
+                        ],
+                    ],
+                    "name": "rpc.grpc.request.metadata",
+                    "note": "Instrumentations SHOULD require an explicit configuration of which metadata values are to be captured.\nIncluding all request metadata values can be a security risk - explicit configuration helps avoid leaking sensitive information.\n\nFor example, a property `my-custom-key` with value `[\"1.2.3.4\", \"1.2.3.5\"]` SHOULD be recorded as\n`rpc.grpc.request.metadata.my-custom-key` attribute with value `[\"1.2.3.4\", \"1.2.3.5\"]`\n",
+                    "requirement_level": "recommended",
+                    "root_namespace": "rpc",
+                    "stability": "development",
+                    "type": "template[string[]]",
+                },
+                {
+                    "brief": "gRPC response metadata, `<key>` being the normalized gRPC Metadata key (lowercase), the value being the metadata values.\n",
+                    "examples": [
+                        [
+                            "attribute_value",
+                        ],
+                    ],
+                    "name": "rpc.grpc.response.metadata",
+                    "note": "Instrumentations SHOULD require an explicit configuration of which metadata values are to be captured.\nIncluding all response metadata values can be a security risk - explicit configuration helps avoid leaking sensitive information.\n\nFor example, a property `my-custom-key` with value `[\"attribute_value\"]` SHOULD be recorded as\nthe `rpc.grpc.response.metadata.my-custom-key` attribute with value `[\"attribute_value\"]`\n",
+                    "requirement_level": "recommended",
+                    "root_namespace": "rpc",
+                    "stability": "development",
+                    "type": "template[string[]]",
+                },
+                {
+                    "brief": "The [numeric status code](https://github.com/grpc/grpc/blob/v1.33.2/doc/statuscodes.md) of the gRPC request.",
+                    "name": "rpc.grpc.status_code",
+                    "requirement_level": "recommended",
+                    "root_namespace": "rpc",
+                    "stability": "development",
+                    "type": {
+                        "members": [
+                            {
+                                "brief": "OK",
+                                "id": "ok",
+                                "stability": "development",
+                                "value": 0,
+                            },
+                            {
+                                "brief": "CANCELLED",
+                                "id": "cancelled",
+                                "stability": "development",
+                                "value": 1,
+                            },
+                            {
+                                "brief": "UNKNOWN",
+                                "id": "unknown",
+                                "stability": "development",
+                                "value": 2,
+                            },
+                            {
+                                "brief": "INVALID_ARGUMENT",
+                                "id": "invalid_argument",
+                                "stability": "development",
+                                "value": 3,
+                            },
+                            {
+                                "brief": "DEADLINE_EXCEEDED",
+                                "id": "deadline_exceeded",
+                                "stability": "development",
+                                "value": 4,
+                            },
+                            {
+                                "brief": "NOT_FOUND",
+                                "id": "not_found",
+                                "stability": "development",
+                                "value": 5,
+                            },
+                            {
+                                "brief": "ALREADY_EXISTS",
+                                "id": "already_exists",
+                                "stability": "development",
+                                "value": 6,
+                            },
+                            {
+                                "brief": "PERMISSION_DENIED",
+                                "id": "permission_denied",
+                                "stability": "development",
+                                "value": 7,
+                            },
+                            {
+                                "brief": "RESOURCE_EXHAUSTED",
+                                "id": "resource_exhausted",
+                                "stability": "development",
+                                "value": 8,
+                            },
+                            {
+                                "brief": "FAILED_PRECONDITION",
+                                "id": "failed_precondition",
+                                "stability": "development",
+                                "value": 9,
+                            },
+                            {
+                                "brief": "ABORTED",
+                                "id": "aborted",
+                                "stability": "development",
+                                "value": 10,
+                            },
+                            {
+                                "brief": "OUT_OF_RANGE",
+                                "id": "out_of_range",
+                                "stability": "development",
+                                "value": 11,
+                            },
+                            {
+                                "brief": "UNIMPLEMENTED",
+                                "id": "unimplemented",
+                                "stability": "development",
+                                "value": 12,
+                            },
+                            {
+                                "brief": "INTERNAL",
+                                "id": "internal",
+                                "stability": "development",
+                                "value": 13,
+                            },
+                            {
+                                "brief": "UNAVAILABLE",
+                                "id": "unavailable",
+                                "stability": "development",
+                                "value": 14,
+                            },
+                            {
+                                "brief": "DATA_LOSS",
+                                "id": "data_loss",
+                                "stability": "development",
+                                "value": 15,
+                            },
+                            {
+                                "brief": "UNAUTHENTICATED",
+                                "id": "unauthenticated",
+                                "stability": "development",
+                                "value": 16,
+                            },
+                        ],
+                    },
+                },
+                {
+                    "brief": "`error.code` property of response if it is an error response.",
+                    "examples": [
+                        -32700,
+                        100,
+                    ],
+                    "name": "rpc.jsonrpc.error_code",
+                    "requirement_level": "recommended",
+                    "root_namespace": "rpc",
+                    "stability": "development",
+                    "type": "int",
+                },
+                {
+                    "brief": "`error.message` property of response if it is an error response.",
+                    "examples": [
+                        "Parse error",
+                        "User already exists",
+                    ],
+                    "name": "rpc.jsonrpc.error_message",
+                    "requirement_level": "recommended",
+                    "root_namespace": "rpc",
+                    "stability": "development",
+                    "type": "string",
+                },
+                {
+                    "brief": "`id` property of request or response. Since protocol allows id to be int, string, `null` or missing (for notifications), value is expected to be cast to string for simplicity. Use empty string in case of `null` value. Omit entirely if this is a notification.\n",
+                    "examples": [
+                        "10",
+                        "request-7",
+                        "",
+                    ],
+                    "name": "rpc.jsonrpc.request_id",
+                    "requirement_level": "recommended",
+                    "root_namespace": "rpc",
+                    "stability": "development",
+                    "type": "string",
+                },
+                {
+                    "brief": "Protocol version as in `jsonrpc` property of request/response. Since JSON-RPC 1.0 doesn't specify this, the value can be omitted.",
+                    "examples": [
+                        "2.0",
+                        "1.0",
+                    ],
+                    "name": "rpc.jsonrpc.version",
+                    "requirement_level": "recommended",
+                    "root_namespace": "rpc",
+                    "stability": "development",
+                    "type": "string",
+                },
+                {
+                    "brief": "Compressed size of the message in bytes.",
+                    "name": "rpc.message.compressed_size",
+                    "requirement_level": "recommended",
+                    "root_namespace": "rpc",
+                    "stability": "development",
+                    "type": "int",
+                },
+                {
+                    "brief": "MUST be calculated as two different counters starting from `1` one for sent messages and one for received message.",
+                    "name": "rpc.message.id",
+                    "note": "This way we guarantee that the values will be consistent between different implementations.",
+                    "requirement_level": "recommended",
+                    "root_namespace": "rpc",
+                    "stability": "development",
+                    "type": "int",
+                },
+                {
+                    "brief": "Whether this is a received or sent message.",
+                    "name": "rpc.message.type",
+                    "requirement_level": "recommended",
+                    "root_namespace": "rpc",
+                    "stability": "development",
+                    "type": {
+                        "members": [
+                            {
+                                "id": "sent",
+                                "stability": "development",
+                                "value": "SENT",
+                            },
+                            {
+                                "id": "received",
+                                "stability": "development",
+                                "value": "RECEIVED",
+                            },
+                        ],
+                    },
+                },
+                {
+                    "brief": "Uncompressed size of the message in bytes.",
+                    "name": "rpc.message.uncompressed_size",
+                    "requirement_level": "recommended",
+                    "root_namespace": "rpc",
+                    "stability": "development",
+                    "type": "int",
+                },
+                {
+                    "brief": "The name of the (logical) method being called, must be equal to the $method part in the span name.",
+                    "examples": "exampleMethod",
+                    "name": "rpc.method",
+                    "note": "This is the logical name of the method from the RPC interface perspective, which can be different from the name of any implementing method/function. The `code.function.name` attribute may be used to store the latter (e.g., method actually executing the call on the server side, RPC client stub method on the client side).\n",
+                    "requirement_level": "recommended",
+                    "root_namespace": "rpc",
+                    "stability": "development",
+                    "type": "string",
+                },
+                {
+                    "brief": "The full (logical) name of the service being called, including its package name, if applicable.",
+                    "examples": "myservice.EchoService",
+                    "name": "rpc.service",
+                    "note": "This is the logical name of the service from the RPC interface perspective, which can be different from the name of any implementing class. The `code.namespace` attribute may be used to store the latter (despite the attribute name, it may include a class name; e.g., class with method actually executing the call on the server side, RPC client stub class on the client side).\n",
+                    "requirement_level": "recommended",
+                    "root_namespace": "rpc",
+                    "stability": "development",
+                    "type": "string",
+                },
+                {
+                    "brief": "A string identifying the remoting system. See below for a list of well-known identifiers.",
+                    "name": "rpc.system",
+                    "requirement_level": "recommended",
+                    "root_namespace": "rpc",
+                    "stability": "development",
+                    "type": {
+                        "members": [
+                            {
+                                "brief": "gRPC",
+                                "id": "grpc",
+                                "stability": "development",
+                                "value": "grpc",
+                            },
+                            {
+                                "brief": "Java RMI",
+                                "id": "java_rmi",
+                                "stability": "development",
+                                "value": "java_rmi",
+                            },
+                            {
+                                "brief": ".NET WCF",
+                                "id": "dotnet_wcf",
+                                "stability": "development",
+                                "value": "dotnet_wcf",
+                            },
+                            {
+                                "brief": "Apache Dubbo",
+                                "id": "apache_dubbo",
+                                "stability": "development",
+                                "value": "apache_dubbo",
+                            },
+                            {
+                                "brief": "Connect RPC",
+                                "id": "connect_rpc",
+                                "stability": "development",
+                                "value": "connect_rpc",
+                            },
+                        ],
+                    },
+                },
+            ],
+            "root_namespace": "rpc",
+        },
+    },
+    env: Environment {
+        globals: {
+            "concat_if": weaver_forge::extensions::util::concat_if,
+            "cycler": minijinja_contrib::globals::cycler,
+            "debug": minijinja::functions::builtins::debug,
+            "dict": minijinja::functions::builtins::dict,
+            "joiner": minijinja_contrib::globals::joiner,
+            "namespace": minijinja::functions::builtins::namespace,
+            "params": {
+                "params": {},
+            },
+            "range": minijinja::functions::builtins::range,
+            "template": {},
+        },
+        tests: [
+            "!=",
+            "<",
+            "<=",
+            "==",
+            ">",
+            ">=",
+            "array",
+            "boolean",
+            "defined",
+            "deprecated",
+            "divisibleby",
+            "endingwith",
+            "enum",
+            "enum_type",
+            "eq",
+            "equalto",
+            "escaped",
+            "even",
+            "experimental",
+            "false",
+            "filter",
+            "float",
+            "ge",
+            "greaterthan",
+            "gt",
+            "in",
+            "int",
+            "integer",
+            "iterable",
+            "le",
+            "lessthan",
+            "lower",
+            "lt",
+            "mapping",
+            "ne",
+            "none",
+            "number",
+            "odd",
+            "safe",
+            "sameas",
+            "sequence",
+            "simple_type",
+            "stable",
+            "startingwith",
+            "string",
+            "template_type",
+            "test",
+            "true",
+            "undefined",
+            "upper",
+        ],
+        filters: [
+            "abs",
+            "acronym",
+            "ansi_bg_black",
+            "ansi_bg_blue",
+            "ansi_bg_bright_black",
+            "ansi_bg_bright_blue",
+            "ansi_bg_bright_cyan",
+            "ansi_bg_bright_green",
+            "ansi_bg_bright_magenta",
+            "ansi_bg_bright_red",
+            "ansi_bg_bright_white",
+            "ansi_bg_bright_yellow",
+            "ansi_bg_cyan",
+            "ansi_bg_green",
+            "ansi_bg_magenta",
+            "ansi_bg_red",
+            "ansi_bg_white",
+            "ansi_bg_yellow",
+            "ansi_black",
+            "ansi_blue",
+            "ansi_bold",
+            "ansi_bright_black",
+            "ansi_bright_blue",
+            "ansi_bright_cyan",
+            "ansi_bright_green",
+            "ansi_bright_magenta",
+            "ansi_bright_red",
+            "ansi_bright_white",
+            "ansi_bright_yellow",
+            "ansi_cyan",
+            "ansi_green",
+            "ansi_italic",
+            "ansi_magenta",
+            "ansi_red",
+            "ansi_strikethrough",
+            "ansi_underline",
+            "ansi_white",
+            "ansi_yellow",
+            "attr",
+            "attribute_id",
+            "attribute_namespace",
+            "attribute_registry_file",
+            "attribute_registry_namespace",
+            "attribute_registry_title",
+            "attribute_sort",
+            "batch",
+            "body_fields",
+            "bool",
+            "camel_case",
+            "camel_case_const",
+            "capitalize",
+            "capitalize_first",
+            "chain",
+            "comment",
+            "comment_with_prefix",
+            "count",
+            "d",
+            "default",
+            "dictsort",
+            "e",
+            "enum_type",
+            "escape",
+            "filesizeformat",
+            "first",
+            "flatten",
+            "float",
+            "groupby",
+            "indent",
+            "instantiated_type",
+            "int",
+            "items",
+            "join",
+            "kebab_case",
+            "kebab_case_const",
+            "last",
+            "length",
+            "lines",
+            "list",
+            "lower",
+            "lower_case",
+            "map",
+            "map_text",
+            "markdown_to_html",
+            "max",
+            "metric_namespace",
+            "min",
+            "not_required",
+            "pascal_case",
+            "pascal_case_const",
+            "pluralize",
+            "pprint",
+            "print_member_value",
+            "regex_replace",
+            "reject",
+            "rejectattr",
+            "replace",
+            "required",
+            "reverse",
+            "round",
+            "safe",
+            "screaming_kebab_case",
+            "screaming_snake_case",
+            "screaming_snake_case_const",
+            "select",
+            "selectattr",
+            "slice",
+            "snake_case",
+            "snake_case_const",
+            "sort",
+            "split",
+            "split_id",
+            "string",
+            "striptags",
+            "sum",
+            "title",
+            "title_case",
+            "tojson",
+            "toyaml",
+            "trim",
+            "truncate",
+            "type_mapping",
+            "unique",
+            "upper",
+            "upper_case",
+            "urlencode",
+        ],
+        templates: [
+            "attr.go.j2",
+        ],
+    },
+} */

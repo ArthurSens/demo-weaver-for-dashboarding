@@ -1,0 +1,1003 @@
+package messaging
+
+import (
+       "github.com/prometheus/client_golang/prometheus"
+      "github.com/ArthurSens/demo-weaver-for-dashboarding/dashboards/error"
+      "github.com/ArthurSens/demo-weaver-for-dashboarding/dashboards/server"
+)
+
+// Duration of messaging operation initiated by a producer or consumer client.
+type ClientOperationDuration struct {
+     *prometheus.HistogramVec
+     extra ClientOperationDurationExtra
+}
+
+
+
+func NewClientOperationDuration() ClientOperationDuration {
+     labels := []string{AttrOperationName("").Key(),AttrSystem("").Key(),error.AttrType("").Key(),AttrConsumerGroupName("").Key(),AttrDestinationName("").Key(),AttrDestinationSubscriptionName("").Key(),AttrDestinationTemplate("").Key(),AttrOperationType("").Key(),server.AttrAddress("").Key(),AttrDestinationPartitionId("").Key(),server.AttrPort("").Key(),}
+     return ClientOperationDuration{ 
+        HistogramVec: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+            Name: "messaging_client_operation_duration",
+            Help: "Duration of messaging operation initiated by a producer or consumer client.",
+     }, labels)}
+}
+
+func (m ClientOperationDuration) With(operationName AttrOperationName,system AttrSystem,extras ...interface {ErrorType() error.AttrType;MessagingConsumerGroupName() AttrConsumerGroupName;MessagingDestinationName() AttrDestinationName;MessagingDestinationSubscriptionName() AttrDestinationSubscriptionName;MessagingDestinationTemplate() AttrDestinationTemplate;MessagingOperationType() AttrOperationType;ServerAddress() server.AttrAddress;MessagingDestinationPartitionId() AttrDestinationPartitionId;ServerPort() server.AttrPort;}) prometheus.Observer { 
+        if extras == nil { extras = append(extras, m.extra) }
+        extra := extras[0]
+    
+    return m.HistogramVec.WithLabelValues(operationName.Value(),system.Value(),extra.ErrorType().Value(),extra.MessagingConsumerGroupName().Value(),extra.MessagingDestinationName().Value(),extra.MessagingDestinationSubscriptionName().Value(),extra.MessagingDestinationTemplate().Value(),extra.MessagingOperationType().Value(),extra.ServerAddress().Value(),extra.MessagingDestinationPartitionId().Value(),extra.ServerPort().Value(),)
+}
+
+// Deprecated: Use [ClientOperationDuration.With] instead
+func (m ClientOperationDuration) WithLabelValues(lvs ...string) prometheus.Observer {
+    return m.HistogramVec.WithLabelValues(lvs...)
+}
+
+func (a ClientOperationDuration) WithErrorType (attr interface { ErrorType() error.AttrType } ) ClientOperationDuration {
+    a.extra.AttrErrorType = attr.ErrorType()
+    return a
+}
+func (a ClientOperationDuration) WithConsumerGroupName (attr interface { MessagingConsumerGroupName() AttrConsumerGroupName } ) ClientOperationDuration {
+    a.extra.AttrConsumerGroupName = attr.MessagingConsumerGroupName()
+    return a
+}
+func (a ClientOperationDuration) WithDestinationName (attr interface { MessagingDestinationName() AttrDestinationName } ) ClientOperationDuration {
+    a.extra.AttrDestinationName = attr.MessagingDestinationName()
+    return a
+}
+func (a ClientOperationDuration) WithDestinationSubscriptionName (attr interface { MessagingDestinationSubscriptionName() AttrDestinationSubscriptionName } ) ClientOperationDuration {
+    a.extra.AttrDestinationSubscriptionName = attr.MessagingDestinationSubscriptionName()
+    return a
+}
+func (a ClientOperationDuration) WithDestinationTemplate (attr interface { MessagingDestinationTemplate() AttrDestinationTemplate } ) ClientOperationDuration {
+    a.extra.AttrDestinationTemplate = attr.MessagingDestinationTemplate()
+    return a
+}
+func (a ClientOperationDuration) WithOperationType (attr interface { MessagingOperationType() AttrOperationType } ) ClientOperationDuration {
+    a.extra.AttrOperationType = attr.MessagingOperationType()
+    return a
+}
+func (a ClientOperationDuration) WithServerAddress (attr interface { ServerAddress() server.AttrAddress } ) ClientOperationDuration {
+    a.extra.AttrServerAddress = attr.ServerAddress()
+    return a
+}
+func (a ClientOperationDuration) WithDestinationPartitionId (attr interface { MessagingDestinationPartitionId() AttrDestinationPartitionId } ) ClientOperationDuration {
+    a.extra.AttrDestinationPartitionId = attr.MessagingDestinationPartitionId()
+    return a
+}
+func (a ClientOperationDuration) WithServerPort (attr interface { ServerPort() server.AttrPort } ) ClientOperationDuration {
+    a.extra.AttrServerPort = attr.ServerPort()
+    return a
+}
+
+
+type ClientOperationDurationExtra struct {
+// Describes a class of error the operation ended with
+    AttrErrorType error.AttrType `otel:"error.type"`// The name of the consumer group with which a consumer is associated
+    AttrConsumerGroupName AttrConsumerGroupName `otel:"messaging.consumer.group.name"`// The message destination name
+    AttrDestinationName AttrDestinationName `otel:"messaging.destination.name"`// The name of the destination subscription from which a message is consumed
+    AttrDestinationSubscriptionName AttrDestinationSubscriptionName `otel:"messaging.destination.subscription.name"`// Low cardinality representation of the messaging destination name
+    AttrDestinationTemplate AttrDestinationTemplate `otel:"messaging.destination.template"`// A string identifying the type of the messaging operation
+    AttrOperationType AttrOperationType `otel:"messaging.operation.type"`// Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name
+    AttrServerAddress server.AttrAddress `otel:"server.address"`// The identifier of the partition messages are sent to or received from, unique within the `messaging.destination.name`
+    AttrDestinationPartitionId AttrDestinationPartitionId `otel:"messaging.destination.partition.id"`// Server port number
+    AttrServerPort server.AttrPort `otel:"server.port"`
+}
+
+func (a ClientOperationDurationExtra) ErrorType() error.AttrType {return a.AttrErrorType}
+func (a ClientOperationDurationExtra) MessagingConsumerGroupName() AttrConsumerGroupName {return a.AttrConsumerGroupName}
+func (a ClientOperationDurationExtra) MessagingDestinationName() AttrDestinationName {return a.AttrDestinationName}
+func (a ClientOperationDurationExtra) MessagingDestinationSubscriptionName() AttrDestinationSubscriptionName {return a.AttrDestinationSubscriptionName}
+func (a ClientOperationDurationExtra) MessagingDestinationTemplate() AttrDestinationTemplate {return a.AttrDestinationTemplate}
+func (a ClientOperationDurationExtra) MessagingOperationType() AttrOperationType {return a.AttrOperationType}
+func (a ClientOperationDurationExtra) ServerAddress() server.AttrAddress {return a.AttrServerAddress}
+func (a ClientOperationDurationExtra) MessagingDestinationPartitionId() AttrDestinationPartitionId {return a.AttrDestinationPartitionId}
+func (a ClientOperationDurationExtra) ServerPort() server.AttrPort {return a.AttrServerPort}
+
+
+/*
+State {
+    name: "vec.go.j2",
+    current_block: None,
+    auto_escape: None,
+    ctx: {
+        "AttrExtra": "ClientOperationDurationExtra",
+        "Instr": "Histogram",
+        "InstrMap": {
+            "counter": "Counter",
+            "gauge": "Gauge",
+            "histogram": "Histogram",
+            "updowncounter": "Gauge",
+        },
+        "Name": "client.operation.duration",
+        "Type": "ClientOperationDuration",
+        "attributes": [
+            {
+                "brief": "The system-specific name of the messaging operation.\n",
+                "examples": [
+                    "send",
+                    "receive",
+                    "ack",
+                ],
+                "name": "messaging.operation.name",
+                "requirement_level": "required",
+                "stability": "development",
+                "type": "string",
+            },
+            {
+                "brief": "The messaging system as identified by the client instrumentation.",
+                "name": "messaging.system",
+                "note": "The actual messaging system may differ from the one known by the client. For example, when using Kafka client libraries to communicate with Azure Event Hubs, the `messaging.system` is set to `kafka` based on the instrumentation's best knowledge.\n",
+                "requirement_level": "required",
+                "stability": "development",
+                "type": {
+                    "members": [
+                        {
+                            "brief": "Apache ActiveMQ",
+                            "id": "activemq",
+                            "stability": "development",
+                            "value": "activemq",
+                        },
+                        {
+                            "brief": "Amazon Simple Queue Service (SQS)",
+                            "id": "aws_sqs",
+                            "stability": "development",
+                            "value": "aws_sqs",
+                        },
+                        {
+                            "brief": "Azure Event Grid",
+                            "id": "eventgrid",
+                            "stability": "development",
+                            "value": "eventgrid",
+                        },
+                        {
+                            "brief": "Azure Event Hubs",
+                            "id": "eventhubs",
+                            "stability": "development",
+                            "value": "eventhubs",
+                        },
+                        {
+                            "brief": "Azure Service Bus",
+                            "id": "servicebus",
+                            "stability": "development",
+                            "value": "servicebus",
+                        },
+                        {
+                            "brief": "Google Cloud Pub/Sub",
+                            "id": "gcp_pubsub",
+                            "stability": "development",
+                            "value": "gcp_pubsub",
+                        },
+                        {
+                            "brief": "Java Message Service",
+                            "id": "jms",
+                            "stability": "development",
+                            "value": "jms",
+                        },
+                        {
+                            "brief": "Apache Kafka",
+                            "id": "kafka",
+                            "stability": "development",
+                            "value": "kafka",
+                        },
+                        {
+                            "brief": "RabbitMQ",
+                            "id": "rabbitmq",
+                            "stability": "development",
+                            "value": "rabbitmq",
+                        },
+                        {
+                            "brief": "Apache RocketMQ",
+                            "id": "rocketmq",
+                            "stability": "development",
+                            "value": "rocketmq",
+                        },
+                        {
+                            "brief": "Apache Pulsar",
+                            "id": "pulsar",
+                            "stability": "development",
+                            "value": "pulsar",
+                        },
+                    ],
+                },
+            },
+            {
+                "brief": "Describes a class of error the operation ended with.\n",
+                "examples": [
+                    "amqp:decode-error",
+                    "KAFKA_STORAGE_ERROR",
+                    "channel-error",
+                ],
+                "name": "error.type",
+                "note": "The `error.type` SHOULD be predictable, and SHOULD have low cardinality.\n\nWhen `error.type` is set to a type (e.g., an exception type), its\ncanonical class name identifying the type within the artifact SHOULD be used.\n\nInstrumentations SHOULD document the list of errors they report.\n\nThe cardinality of `error.type` within one instrumentation library SHOULD be low.\nTelemetry consumers that aggregate data from multiple instrumentation libraries and applications\nshould be prepared for `error.type` to have high cardinality at query time when no\nadditional filters are applied.\n\nIf the operation has completed successfully, instrumentations SHOULD NOT set `error.type`.\n\nIf a specific domain defines its own set of error identifiers (such as HTTP or gRPC status codes),\nit's RECOMMENDED to:\n\n- Use a domain-specific attribute\n- Set `error.type` to capture all errors, regardless of whether they are defined within the domain-specific set or not.\n",
+                "requirement_level": {
+                    "conditionally_required": "If and only if the messaging operation has failed.",
+                },
+                "stability": "stable",
+                "type": {
+                    "members": [
+                        {
+                            "brief": "A fallback error value to be used when the instrumentation doesn't define a custom value.\n",
+                            "id": "other",
+                            "stability": "stable",
+                            "value": "_OTHER",
+                        },
+                    ],
+                },
+            },
+            {
+                "brief": "The name of the consumer group with which a consumer is associated.\n",
+                "examples": [
+                    "my-group",
+                    "indexer",
+                ],
+                "name": "messaging.consumer.group.name",
+                "note": "Semantic conventions for individual messaging systems SHOULD document whether `messaging.consumer.group.name` is applicable and what it means in the context of that system.\n",
+                "requirement_level": {
+                    "conditionally_required": "if applicable.",
+                },
+                "stability": "development",
+                "type": "string",
+            },
+            {
+                "brief": "The message destination name",
+                "examples": [
+                    "MyQueue",
+                    "MyTopic",
+                ],
+                "name": "messaging.destination.name",
+                "note": "Destination name SHOULD uniquely identify a specific queue, topic or other entity within the broker. If\nthe broker doesn't have such notion, the destination name SHOULD uniquely identify the broker.\n",
+                "requirement_level": {
+                    "conditionally_required": "if and only if `messaging.destination.name` is known to have low cardinality. Otherwise, `messaging.destination.template` MAY be populated.",
+                },
+                "stability": "development",
+                "type": "string",
+            },
+            {
+                "brief": "The name of the destination subscription from which a message is consumed.",
+                "examples": [
+                    "subscription-a",
+                ],
+                "name": "messaging.destination.subscription.name",
+                "note": "Semantic conventions for individual messaging systems SHOULD document whether `messaging.destination.subscription.name` is applicable and what it means in the context of that system.\n",
+                "requirement_level": {
+                    "conditionally_required": "if applicable.",
+                },
+                "stability": "development",
+                "type": "string",
+            },
+            {
+                "brief": "Low cardinality representation of the messaging destination name",
+                "examples": [
+                    "/customers/{customerId}",
+                ],
+                "name": "messaging.destination.template",
+                "note": "Destination names could be constructed from templates. An example would be a destination name involving a user name or product id. Although the destination name in this case is of high cardinality, the underlying template is of low cardinality and can be effectively used for grouping and aggregation.\n",
+                "requirement_level": {
+                    "conditionally_required": "if available.",
+                },
+                "stability": "development",
+                "type": "string",
+            },
+            {
+                "brief": "A string identifying the type of the messaging operation.\n",
+                "name": "messaging.operation.type",
+                "note": "If a custom value is used, it MUST be of low cardinality.",
+                "requirement_level": {
+                    "conditionally_required": "If applicable.",
+                },
+                "stability": "development",
+                "type": {
+                    "members": [
+                        {
+                            "brief": "A message is created. \"Create\" spans always refer to a single message and are used to provide a unique creation context for messages in batch sending scenarios.\n",
+                            "id": "create",
+                            "stability": "development",
+                            "value": "create",
+                        },
+                        {
+                            "brief": "One or more messages are provided for sending to an intermediary. If a single message is sent, the context of the \"Send\" span can be used as the creation context and no \"Create\" span needs to be created.\n",
+                            "id": "send",
+                            "stability": "development",
+                            "value": "send",
+                        },
+                        {
+                            "brief": "One or more messages are requested by a consumer. This operation refers to pull-based scenarios, where consumers explicitly call methods of messaging SDKs to receive messages.\n",
+                            "id": "receive",
+                            "stability": "development",
+                            "value": "receive",
+                        },
+                        {
+                            "brief": "One or more messages are processed by a consumer.\n",
+                            "id": "process",
+                            "stability": "development",
+                            "value": "process",
+                        },
+                        {
+                            "brief": "One or more messages are settled.\n",
+                            "id": "settle",
+                            "stability": "development",
+                            "value": "settle",
+                        },
+                        {
+                            "brief": "Deprecated. Use `process` instead.",
+                            "deprecated": {
+                                "note": "Replaced by `process`.",
+                                "reason": "unspecified",
+                            },
+                            "id": "deliver",
+                            "stability": "development",
+                            "value": "deliver",
+                        },
+                        {
+                            "brief": "Deprecated. Use `send` instead.",
+                            "deprecated": {
+                                "note": "Replaced by `send`.",
+                                "reason": "unspecified",
+                            },
+                            "id": "publish",
+                            "stability": "development",
+                            "value": "publish",
+                        },
+                    ],
+                },
+            },
+            {
+                "brief": "Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.",
+                "examples": [
+                    "example.com",
+                    "10.1.2.80",
+                    "/tmp/my.sock",
+                ],
+                "name": "server.address",
+                "note": "Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.\n",
+                "requirement_level": {
+                    "conditionally_required": "If available.",
+                },
+                "stability": "stable",
+                "type": "string",
+            },
+            {
+                "brief": "The identifier of the partition messages are sent to or received from, unique within the `messaging.destination.name`.\n",
+                "examples": "1",
+                "name": "messaging.destination.partition.id",
+                "requirement_level": "recommended",
+                "stability": "development",
+                "type": "string",
+            },
+            {
+                "brief": "Server port number.",
+                "examples": [
+                    80,
+                    8080,
+                    443,
+                ],
+                "name": "server.port",
+                "note": "When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD represent the server port behind any intermediaries, for example proxies, if it's available.\n",
+                "requirement_level": "recommended",
+                "stability": "stable",
+                "type": "int",
+            },
+        ],
+        "ctx": {
+            "annotations": {
+                "code_generation": {
+                    "metric_value_type": "double",
+                },
+            },
+            "attributes": [
+                {
+                    "brief": "Server port number.",
+                    "examples": [
+                        80,
+                        8080,
+                        443,
+                    ],
+                    "name": "server.port",
+                    "note": "When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD represent the server port behind any intermediaries, for example proxies, if it's available.\n",
+                    "requirement_level": "recommended",
+                    "stability": "stable",
+                    "type": "int",
+                },
+                {
+                    "brief": "The identifier of the partition messages are sent to or received from, unique within the `messaging.destination.name`.\n",
+                    "examples": "1",
+                    "name": "messaging.destination.partition.id",
+                    "requirement_level": "recommended",
+                    "stability": "development",
+                    "type": "string",
+                },
+                {
+                    "brief": "Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.",
+                    "examples": [
+                        "example.com",
+                        "10.1.2.80",
+                        "/tmp/my.sock",
+                    ],
+                    "name": "server.address",
+                    "note": "Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.\n",
+                    "requirement_level": {
+                        "conditionally_required": "If available.",
+                    },
+                    "stability": "stable",
+                    "type": "string",
+                },
+                {
+                    "brief": "The message destination name",
+                    "examples": [
+                        "MyQueue",
+                        "MyTopic",
+                    ],
+                    "name": "messaging.destination.name",
+                    "note": "Destination name SHOULD uniquely identify a specific queue, topic or other entity within the broker. If\nthe broker doesn't have such notion, the destination name SHOULD uniquely identify the broker.\n",
+                    "requirement_level": {
+                        "conditionally_required": "if and only if `messaging.destination.name` is known to have low cardinality. Otherwise, `messaging.destination.template` MAY be populated.",
+                    },
+                    "stability": "development",
+                    "type": "string",
+                },
+                {
+                    "brief": "Low cardinality representation of the messaging destination name",
+                    "examples": [
+                        "/customers/{customerId}",
+                    ],
+                    "name": "messaging.destination.template",
+                    "note": "Destination names could be constructed from templates. An example would be a destination name involving a user name or product id. Although the destination name in this case is of high cardinality, the underlying template is of low cardinality and can be effectively used for grouping and aggregation.\n",
+                    "requirement_level": {
+                        "conditionally_required": "if available.",
+                    },
+                    "stability": "development",
+                    "type": "string",
+                },
+                {
+                    "brief": "The messaging system as identified by the client instrumentation.",
+                    "name": "messaging.system",
+                    "note": "The actual messaging system may differ from the one known by the client. For example, when using Kafka client libraries to communicate with Azure Event Hubs, the `messaging.system` is set to `kafka` based on the instrumentation's best knowledge.\n",
+                    "requirement_level": "required",
+                    "stability": "development",
+                    "type": {
+                        "members": [
+                            {
+                                "brief": "Apache ActiveMQ",
+                                "id": "activemq",
+                                "stability": "development",
+                                "value": "activemq",
+                            },
+                            {
+                                "brief": "Amazon Simple Queue Service (SQS)",
+                                "id": "aws_sqs",
+                                "stability": "development",
+                                "value": "aws_sqs",
+                            },
+                            {
+                                "brief": "Azure Event Grid",
+                                "id": "eventgrid",
+                                "stability": "development",
+                                "value": "eventgrid",
+                            },
+                            {
+                                "brief": "Azure Event Hubs",
+                                "id": "eventhubs",
+                                "stability": "development",
+                                "value": "eventhubs",
+                            },
+                            {
+                                "brief": "Azure Service Bus",
+                                "id": "servicebus",
+                                "stability": "development",
+                                "value": "servicebus",
+                            },
+                            {
+                                "brief": "Google Cloud Pub/Sub",
+                                "id": "gcp_pubsub",
+                                "stability": "development",
+                                "value": "gcp_pubsub",
+                            },
+                            {
+                                "brief": "Java Message Service",
+                                "id": "jms",
+                                "stability": "development",
+                                "value": "jms",
+                            },
+                            {
+                                "brief": "Apache Kafka",
+                                "id": "kafka",
+                                "stability": "development",
+                                "value": "kafka",
+                            },
+                            {
+                                "brief": "RabbitMQ",
+                                "id": "rabbitmq",
+                                "stability": "development",
+                                "value": "rabbitmq",
+                            },
+                            {
+                                "brief": "Apache RocketMQ",
+                                "id": "rocketmq",
+                                "stability": "development",
+                                "value": "rocketmq",
+                            },
+                            {
+                                "brief": "Apache Pulsar",
+                                "id": "pulsar",
+                                "stability": "development",
+                                "value": "pulsar",
+                            },
+                        ],
+                    },
+                },
+                {
+                    "brief": "The name of the consumer group with which a consumer is associated.\n",
+                    "examples": [
+                        "my-group",
+                        "indexer",
+                    ],
+                    "name": "messaging.consumer.group.name",
+                    "note": "Semantic conventions for individual messaging systems SHOULD document whether `messaging.consumer.group.name` is applicable and what it means in the context of that system.\n",
+                    "requirement_level": {
+                        "conditionally_required": "if applicable.",
+                    },
+                    "stability": "development",
+                    "type": "string",
+                },
+                {
+                    "brief": "The name of the destination subscription from which a message is consumed.",
+                    "examples": [
+                        "subscription-a",
+                    ],
+                    "name": "messaging.destination.subscription.name",
+                    "note": "Semantic conventions for individual messaging systems SHOULD document whether `messaging.destination.subscription.name` is applicable and what it means in the context of that system.\n",
+                    "requirement_level": {
+                        "conditionally_required": "if applicable.",
+                    },
+                    "stability": "development",
+                    "type": "string",
+                },
+                {
+                    "brief": "The system-specific name of the messaging operation.\n",
+                    "examples": [
+                        "send",
+                        "receive",
+                        "ack",
+                    ],
+                    "name": "messaging.operation.name",
+                    "requirement_level": "required",
+                    "stability": "development",
+                    "type": "string",
+                },
+                {
+                    "brief": "A string identifying the type of the messaging operation.\n",
+                    "name": "messaging.operation.type",
+                    "note": "If a custom value is used, it MUST be of low cardinality.",
+                    "requirement_level": {
+                        "conditionally_required": "If applicable.",
+                    },
+                    "stability": "development",
+                    "type": {
+                        "members": [
+                            {
+                                "brief": "A message is created. \"Create\" spans always refer to a single message and are used to provide a unique creation context for messages in batch sending scenarios.\n",
+                                "id": "create",
+                                "stability": "development",
+                                "value": "create",
+                            },
+                            {
+                                "brief": "One or more messages are provided for sending to an intermediary. If a single message is sent, the context of the \"Send\" span can be used as the creation context and no \"Create\" span needs to be created.\n",
+                                "id": "send",
+                                "stability": "development",
+                                "value": "send",
+                            },
+                            {
+                                "brief": "One or more messages are requested by a consumer. This operation refers to pull-based scenarios, where consumers explicitly call methods of messaging SDKs to receive messages.\n",
+                                "id": "receive",
+                                "stability": "development",
+                                "value": "receive",
+                            },
+                            {
+                                "brief": "One or more messages are processed by a consumer.\n",
+                                "id": "process",
+                                "stability": "development",
+                                "value": "process",
+                            },
+                            {
+                                "brief": "One or more messages are settled.\n",
+                                "id": "settle",
+                                "stability": "development",
+                                "value": "settle",
+                            },
+                            {
+                                "brief": "Deprecated. Use `process` instead.",
+                                "deprecated": {
+                                    "note": "Replaced by `process`.",
+                                    "reason": "unspecified",
+                                },
+                                "id": "deliver",
+                                "stability": "development",
+                                "value": "deliver",
+                            },
+                            {
+                                "brief": "Deprecated. Use `send` instead.",
+                                "deprecated": {
+                                    "note": "Replaced by `send`.",
+                                    "reason": "unspecified",
+                                },
+                                "id": "publish",
+                                "stability": "development",
+                                "value": "publish",
+                            },
+                        ],
+                    },
+                },
+                {
+                    "brief": "Describes a class of error the operation ended with.\n",
+                    "examples": [
+                        "amqp:decode-error",
+                        "KAFKA_STORAGE_ERROR",
+                        "channel-error",
+                    ],
+                    "name": "error.type",
+                    "note": "The `error.type` SHOULD be predictable, and SHOULD have low cardinality.\n\nWhen `error.type` is set to a type (e.g., an exception type), its\ncanonical class name identifying the type within the artifact SHOULD be used.\n\nInstrumentations SHOULD document the list of errors they report.\n\nThe cardinality of `error.type` within one instrumentation library SHOULD be low.\nTelemetry consumers that aggregate data from multiple instrumentation libraries and applications\nshould be prepared for `error.type` to have high cardinality at query time when no\nadditional filters are applied.\n\nIf the operation has completed successfully, instrumentations SHOULD NOT set `error.type`.\n\nIf a specific domain defines its own set of error identifiers (such as HTTP or gRPC status codes),\nit's RECOMMENDED to:\n\n- Use a domain-specific attribute\n- Set `error.type` to capture all errors, regardless of whether they are defined within the domain-specific set or not.\n",
+                    "requirement_level": {
+                        "conditionally_required": "If and only if the messaging operation has failed.",
+                    },
+                    "stability": "stable",
+                    "type": {
+                        "members": [
+                            {
+                                "brief": "A fallback error value to be used when the instrumentation doesn't define a custom value.\n",
+                                "id": "other",
+                                "stability": "stable",
+                                "value": "_OTHER",
+                            },
+                        ],
+                    },
+                },
+            ],
+            "brief": "Duration of messaging operation initiated by a producer or consumer client.",
+            "id": "metric.messaging.client.operation.duration",
+            "instrument": "histogram",
+            "lineage": {
+                "attributes": {
+                    "error.type": {
+                        "inherited_fields": [
+                            "brief",
+                            "note",
+                            "stability",
+                        ],
+                        "locally_overridden_fields": [
+                            "examples",
+                            "requirement_level",
+                        ],
+                        "source_group": "registry.error",
+                    },
+                    "messaging.consumer.group.name": {
+                        "inherited_fields": [
+                            "brief",
+                            "examples",
+                            "note",
+                            "stability",
+                        ],
+                        "locally_overridden_fields": [
+                            "requirement_level",
+                        ],
+                        "source_group": "registry.messaging",
+                    },
+                    "messaging.destination.name": {
+                        "inherited_fields": [
+                            "brief",
+                            "examples",
+                            "note",
+                            "stability",
+                        ],
+                        "locally_overridden_fields": [
+                            "requirement_level",
+                        ],
+                        "source_group": "registry.messaging",
+                    },
+                    "messaging.destination.partition.id": {
+                        "inherited_fields": [
+                            "brief",
+                            "examples",
+                            "note",
+                            "requirement_level",
+                            "stability",
+                        ],
+                        "source_group": "registry.messaging",
+                    },
+                    "messaging.destination.subscription.name": {
+                        "inherited_fields": [
+                            "brief",
+                            "examples",
+                            "note",
+                            "stability",
+                        ],
+                        "locally_overridden_fields": [
+                            "requirement_level",
+                        ],
+                        "source_group": "registry.messaging",
+                    },
+                    "messaging.destination.template": {
+                        "inherited_fields": [
+                            "brief",
+                            "examples",
+                            "note",
+                            "stability",
+                        ],
+                        "locally_overridden_fields": [
+                            "requirement_level",
+                        ],
+                        "source_group": "registry.messaging",
+                    },
+                    "messaging.operation.name": {
+                        "inherited_fields": [
+                            "brief",
+                            "note",
+                            "stability",
+                        ],
+                        "locally_overridden_fields": [
+                            "examples",
+                            "requirement_level",
+                        ],
+                        "source_group": "registry.messaging",
+                    },
+                    "messaging.operation.type": {
+                        "inherited_fields": [
+                            "brief",
+                            "note",
+                            "stability",
+                        ],
+                        "locally_overridden_fields": [
+                            "requirement_level",
+                        ],
+                        "source_group": "registry.messaging",
+                    },
+                    "messaging.system": {
+                        "inherited_fields": [
+                            "brief",
+                            "note",
+                            "stability",
+                        ],
+                        "locally_overridden_fields": [
+                            "requirement_level",
+                        ],
+                        "source_group": "registry.messaging",
+                    },
+                    "server.address": {
+                        "inherited_fields": [
+                            "brief",
+                            "examples",
+                            "stability",
+                        ],
+                        "locally_overridden_fields": [
+                            "note",
+                            "requirement_level",
+                        ],
+                        "source_group": "registry.server",
+                    },
+                    "server.port": {
+                        "inherited_fields": [
+                            "brief",
+                            "examples",
+                            "note",
+                            "requirement_level",
+                            "stability",
+                        ],
+                        "source_group": "registry.server",
+                    },
+                },
+                "provenance": {
+                    "path": "https://github.com/open-telemetry/semantic-conventions.git[model]/messaging/metrics.yaml",
+                    "registry_id": "main",
+                },
+            },
+            "metric_name": "messaging.client.operation.duration",
+            "note": "This metric SHOULD NOT be used to report processing duration - processing duration is reported in `messaging.process.duration` metric.\n",
+            "root_namespace": "messaging",
+            "stability": "development",
+            "type": "metric",
+            "unit": "s",
+        },
+        "for_each_attr": <macro for_each_attr>,
+        "module": "github.com/ArthurSens/demo-weaver-for-dashboarding/dashboards",
+    },
+    env: Environment {
+        globals: {
+            "concat_if": weaver_forge::extensions::util::concat_if,
+            "cycler": minijinja_contrib::globals::cycler,
+            "debug": minijinja::functions::builtins::debug,
+            "dict": minijinja::functions::builtins::dict,
+            "joiner": minijinja_contrib::globals::joiner,
+            "namespace": minijinja::functions::builtins::namespace,
+            "params": {
+                "params": {},
+            },
+            "range": minijinja::functions::builtins::range,
+            "template": {},
+        },
+        tests: [
+            "!=",
+            "<",
+            "<=",
+            "==",
+            ">",
+            ">=",
+            "array",
+            "boolean",
+            "defined",
+            "deprecated",
+            "divisibleby",
+            "endingwith",
+            "enum",
+            "enum_type",
+            "eq",
+            "equalto",
+            "escaped",
+            "even",
+            "experimental",
+            "false",
+            "filter",
+            "float",
+            "ge",
+            "greaterthan",
+            "gt",
+            "in",
+            "int",
+            "integer",
+            "iterable",
+            "le",
+            "lessthan",
+            "lower",
+            "lt",
+            "mapping",
+            "ne",
+            "none",
+            "number",
+            "odd",
+            "safe",
+            "sameas",
+            "sequence",
+            "simple_type",
+            "stable",
+            "startingwith",
+            "string",
+            "template_type",
+            "test",
+            "true",
+            "undefined",
+            "upper",
+        ],
+        filters: [
+            "abs",
+            "acronym",
+            "ansi_bg_black",
+            "ansi_bg_blue",
+            "ansi_bg_bright_black",
+            "ansi_bg_bright_blue",
+            "ansi_bg_bright_cyan",
+            "ansi_bg_bright_green",
+            "ansi_bg_bright_magenta",
+            "ansi_bg_bright_red",
+            "ansi_bg_bright_white",
+            "ansi_bg_bright_yellow",
+            "ansi_bg_cyan",
+            "ansi_bg_green",
+            "ansi_bg_magenta",
+            "ansi_bg_red",
+            "ansi_bg_white",
+            "ansi_bg_yellow",
+            "ansi_black",
+            "ansi_blue",
+            "ansi_bold",
+            "ansi_bright_black",
+            "ansi_bright_blue",
+            "ansi_bright_cyan",
+            "ansi_bright_green",
+            "ansi_bright_magenta",
+            "ansi_bright_red",
+            "ansi_bright_white",
+            "ansi_bright_yellow",
+            "ansi_cyan",
+            "ansi_green",
+            "ansi_italic",
+            "ansi_magenta",
+            "ansi_red",
+            "ansi_strikethrough",
+            "ansi_underline",
+            "ansi_white",
+            "ansi_yellow",
+            "attr",
+            "attribute_id",
+            "attribute_namespace",
+            "attribute_registry_file",
+            "attribute_registry_namespace",
+            "attribute_registry_title",
+            "attribute_sort",
+            "batch",
+            "body_fields",
+            "bool",
+            "camel_case",
+            "camel_case_const",
+            "capitalize",
+            "capitalize_first",
+            "chain",
+            "comment",
+            "comment_with_prefix",
+            "count",
+            "d",
+            "default",
+            "dictsort",
+            "e",
+            "enum_type",
+            "escape",
+            "filesizeformat",
+            "first",
+            "flatten",
+            "float",
+            "groupby",
+            "indent",
+            "instantiated_type",
+            "int",
+            "items",
+            "join",
+            "kebab_case",
+            "kebab_case_const",
+            "last",
+            "length",
+            "lines",
+            "list",
+            "lower",
+            "lower_case",
+            "map",
+            "map_text",
+            "markdown_to_html",
+            "max",
+            "metric_namespace",
+            "min",
+            "not_required",
+            "pascal_case",
+            "pascal_case_const",
+            "pluralize",
+            "pprint",
+            "print_member_value",
+            "regex_replace",
+            "reject",
+            "rejectattr",
+            "replace",
+            "required",
+            "reverse",
+            "round",
+            "safe",
+            "screaming_kebab_case",
+            "screaming_snake_case",
+            "screaming_snake_case_const",
+            "select",
+            "selectattr",
+            "slice",
+            "snake_case",
+            "snake_case_const",
+            "sort",
+            "split",
+            "split_id",
+            "string",
+            "striptags",
+            "sum",
+            "title",
+            "title_case",
+            "tojson",
+            "toyaml",
+            "trim",
+            "truncate",
+            "type_mapping",
+            "unique",
+            "upper",
+            "upper_case",
+            "urlencode",
+        ],
+        templates: [
+            "vec.go.j2",
+        ],
+    },
+}
+*/

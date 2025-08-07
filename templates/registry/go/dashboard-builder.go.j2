@@ -1,0 +1,58 @@
+package {{ctx.root_namespace | replace("go", "golang")}}
+{% set metrics = ctx.metrics %}
+
+// Import the appropriate Grafana Foundation SDK packages
+import (
+	"encoding/json"
+	"log"
+
+	"github.com/grafana/grafana-foundation-sdk/go/cog"
+	"github.com/grafana/grafana-foundation-sdk/go/common"
+	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
+	"github.com/grafana/grafana-foundation-sdk/go/prometheus"
+	"github.com/grafana/grafana-foundation-sdk/go/timeseries"
+)
+
+
+func main() {
+  prometheusDataSourceRef := dashboard.DataSourceRef{
+	Type: cog.ToPtr("prometheus"),
+    Uid:  cog.ToPtr("prometheus"),
+  }
+
+  // Define our dashboard as strongly typed code
+  builder := dashboard.NewDashboardBuilder("{{ctx.root_namespace}}").
+    Uid("{{ctx.root_namespace}}-dashboard").
+	Tags([]string{"built-with-weaver"}).
+	Refresh("5m").
+	Time("now-1h", "now").
+	Timezone(common.TimeZoneBrowser).
+	{%- for metric in metrics %}
+	WithPanel(
+		timeseries.NewPanelBuilder().
+			Title("{{metric.brief}}").
+			Datasource(prometheusDataSourceRef).
+			WithTarget(
+				prometheus.NewDataqueryBuilder().
+					Expr("rate({{metric.metric_name}}[$__rate_interval])").
+					Range().
+					Format(prometheus.PromQueryFormatTimeSeries).
+					LegendFormat("__auto"),
+			),
+	){% if not loop.last %}.{% endif %}
+	{%- endfor %}
+
+  // Build the dashboard - errors in configuration will be thrown here
+  dashboard, err := builder.Build()
+  if err != nil {
+    log.Fatalf("failed to build dashboard: %v", err)
+  }
+
+  // Output the generated dashboard as JSON
+  dashboardJson, err := json.MarshalIndent(dashboard, "", "  ")
+  if err != nil {
+    log.Fatalf("failed to marshal dashboard: %v", err)
+  }
+// CALL Grafana API -X UPDATE DASHBOARD
+  log.Printf(string(dashboardJson))
+}

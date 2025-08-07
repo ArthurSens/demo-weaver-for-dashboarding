@@ -1,0 +1,335 @@
+package aspnetcore
+
+import (
+       "github.com/prometheus/client_golang/prometheus"
+)
+
+// Number of requests that are currently queued, waiting to acquire a rate limiting lease.
+type RateLimitingQueuedRequests struct {
+     *prometheus.GaugeVec
+     extra RateLimitingQueuedRequestsExtra
+}
+
+
+
+func NewRateLimitingQueuedRequests() RateLimitingQueuedRequests {
+     labels := []string{AttrRateLimitingPolicy("").Key(),}
+     return RateLimitingQueuedRequests{ 
+        GaugeVec: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+            Name: "aspnetcore_rate_limiting_queued_requests",
+            Help: "Number of requests that are currently queued, waiting to acquire a rate limiting lease.",
+     }, labels)}
+}
+
+func (m RateLimitingQueuedRequests) With(extras ...interface {AspnetcoreRateLimitingPolicy() AttrRateLimitingPolicy;}) prometheus.Gauge { 
+        if extras == nil { extras = append(extras, m.extra) }
+        extra := extras[0]
+    
+    return m.GaugeVec.WithLabelValues(extra.AspnetcoreRateLimitingPolicy().Value(),)
+}
+
+// Deprecated: Use [RateLimitingQueuedRequests.With] instead
+func (m RateLimitingQueuedRequests) WithLabelValues(lvs ...string) prometheus.Gauge {
+    return m.GaugeVec.WithLabelValues(lvs...)
+}
+
+func (a RateLimitingQueuedRequests) WithRateLimitingPolicy (attr interface { AspnetcoreRateLimitingPolicy() AttrRateLimitingPolicy } ) RateLimitingQueuedRequests {
+    a.extra.AttrRateLimitingPolicy = attr.AspnetcoreRateLimitingPolicy()
+    return a
+}
+
+
+type RateLimitingQueuedRequestsExtra struct {
+// Rate limiting policy name
+    AttrRateLimitingPolicy AttrRateLimitingPolicy `otel:"aspnetcore.rate_limiting.policy"`
+}
+
+func (a RateLimitingQueuedRequestsExtra) AspnetcoreRateLimitingPolicy() AttrRateLimitingPolicy {return a.AttrRateLimitingPolicy}
+
+
+/*
+State {
+    name: "vec.go.j2",
+    current_block: None,
+    auto_escape: None,
+    ctx: {
+        "AttrExtra": "RateLimitingQueuedRequestsExtra",
+        "Instr": "Gauge",
+        "InstrMap": {
+            "counter": "Counter",
+            "gauge": "Gauge",
+            "histogram": "Histogram",
+            "updowncounter": "Gauge",
+        },
+        "Name": "rate_limiting.queued_requests",
+        "Type": "RateLimitingQueuedRequests",
+        "attributes": [
+            {
+                "brief": "Rate limiting policy name.",
+                "examples": [
+                    "fixed",
+                    "sliding",
+                    "token",
+                ],
+                "name": "aspnetcore.rate_limiting.policy",
+                "requirement_level": {
+                    "conditionally_required": "if the matched endpoint for the request had a rate-limiting policy.",
+                },
+                "stability": "stable",
+                "type": "string",
+            },
+        ],
+        "ctx": {
+            "annotations": {
+                "code_generation": {
+                    "metric_value_type": "int",
+                },
+            },
+            "attributes": [
+                {
+                    "brief": "Rate limiting policy name.",
+                    "examples": [
+                        "fixed",
+                        "sliding",
+                        "token",
+                    ],
+                    "name": "aspnetcore.rate_limiting.policy",
+                    "requirement_level": {
+                        "conditionally_required": "if the matched endpoint for the request had a rate-limiting policy.",
+                    },
+                    "stability": "stable",
+                    "type": "string",
+                },
+            ],
+            "brief": "Number of requests that are currently queued, waiting to acquire a rate limiting lease.",
+            "id": "metric.aspnetcore.rate_limiting.queued_requests",
+            "instrument": "updowncounter",
+            "lineage": {
+                "attributes": {
+                    "aspnetcore.rate_limiting.policy": {
+                        "inherited_fields": [
+                            "brief",
+                            "examples",
+                            "note",
+                            "stability",
+                        ],
+                        "locally_overridden_fields": [
+                            "requirement_level",
+                        ],
+                        "source_group": "registry.aspnetcore",
+                    },
+                },
+                "provenance": {
+                    "path": "https://github.com/open-telemetry/semantic-conventions.git[model]/aspnetcore/metrics.yaml",
+                    "registry_id": "main",
+                },
+            },
+            "metric_name": "aspnetcore.rate_limiting.queued_requests",
+            "note": "Meter name: `Microsoft.AspNetCore.RateLimiting`; Added in: ASP.NET Core 8.0\n",
+            "root_namespace": "aspnetcore",
+            "stability": "stable",
+            "type": "metric",
+            "unit": "{request}",
+        },
+        "for_each_attr": <macro for_each_attr>,
+        "module": "github.com/ArthurSens/demo-weaver-for-dashboarding/dashboards",
+    },
+    env: Environment {
+        globals: {
+            "concat_if": weaver_forge::extensions::util::concat_if,
+            "cycler": minijinja_contrib::globals::cycler,
+            "debug": minijinja::functions::builtins::debug,
+            "dict": minijinja::functions::builtins::dict,
+            "joiner": minijinja_contrib::globals::joiner,
+            "namespace": minijinja::functions::builtins::namespace,
+            "params": {
+                "params": {},
+            },
+            "range": minijinja::functions::builtins::range,
+            "template": {},
+        },
+        tests: [
+            "!=",
+            "<",
+            "<=",
+            "==",
+            ">",
+            ">=",
+            "array",
+            "boolean",
+            "defined",
+            "deprecated",
+            "divisibleby",
+            "endingwith",
+            "enum",
+            "enum_type",
+            "eq",
+            "equalto",
+            "escaped",
+            "even",
+            "experimental",
+            "false",
+            "filter",
+            "float",
+            "ge",
+            "greaterthan",
+            "gt",
+            "in",
+            "int",
+            "integer",
+            "iterable",
+            "le",
+            "lessthan",
+            "lower",
+            "lt",
+            "mapping",
+            "ne",
+            "none",
+            "number",
+            "odd",
+            "safe",
+            "sameas",
+            "sequence",
+            "simple_type",
+            "stable",
+            "startingwith",
+            "string",
+            "template_type",
+            "test",
+            "true",
+            "undefined",
+            "upper",
+        ],
+        filters: [
+            "abs",
+            "acronym",
+            "ansi_bg_black",
+            "ansi_bg_blue",
+            "ansi_bg_bright_black",
+            "ansi_bg_bright_blue",
+            "ansi_bg_bright_cyan",
+            "ansi_bg_bright_green",
+            "ansi_bg_bright_magenta",
+            "ansi_bg_bright_red",
+            "ansi_bg_bright_white",
+            "ansi_bg_bright_yellow",
+            "ansi_bg_cyan",
+            "ansi_bg_green",
+            "ansi_bg_magenta",
+            "ansi_bg_red",
+            "ansi_bg_white",
+            "ansi_bg_yellow",
+            "ansi_black",
+            "ansi_blue",
+            "ansi_bold",
+            "ansi_bright_black",
+            "ansi_bright_blue",
+            "ansi_bright_cyan",
+            "ansi_bright_green",
+            "ansi_bright_magenta",
+            "ansi_bright_red",
+            "ansi_bright_white",
+            "ansi_bright_yellow",
+            "ansi_cyan",
+            "ansi_green",
+            "ansi_italic",
+            "ansi_magenta",
+            "ansi_red",
+            "ansi_strikethrough",
+            "ansi_underline",
+            "ansi_white",
+            "ansi_yellow",
+            "attr",
+            "attribute_id",
+            "attribute_namespace",
+            "attribute_registry_file",
+            "attribute_registry_namespace",
+            "attribute_registry_title",
+            "attribute_sort",
+            "batch",
+            "body_fields",
+            "bool",
+            "camel_case",
+            "camel_case_const",
+            "capitalize",
+            "capitalize_first",
+            "chain",
+            "comment",
+            "comment_with_prefix",
+            "count",
+            "d",
+            "default",
+            "dictsort",
+            "e",
+            "enum_type",
+            "escape",
+            "filesizeformat",
+            "first",
+            "flatten",
+            "float",
+            "groupby",
+            "indent",
+            "instantiated_type",
+            "int",
+            "items",
+            "join",
+            "kebab_case",
+            "kebab_case_const",
+            "last",
+            "length",
+            "lines",
+            "list",
+            "lower",
+            "lower_case",
+            "map",
+            "map_text",
+            "markdown_to_html",
+            "max",
+            "metric_namespace",
+            "min",
+            "not_required",
+            "pascal_case",
+            "pascal_case_const",
+            "pluralize",
+            "pprint",
+            "print_member_value",
+            "regex_replace",
+            "reject",
+            "rejectattr",
+            "replace",
+            "required",
+            "reverse",
+            "round",
+            "safe",
+            "screaming_kebab_case",
+            "screaming_snake_case",
+            "screaming_snake_case_const",
+            "select",
+            "selectattr",
+            "slice",
+            "snake_case",
+            "snake_case_const",
+            "sort",
+            "split",
+            "split_id",
+            "string",
+            "striptags",
+            "sum",
+            "title",
+            "title_case",
+            "tojson",
+            "toyaml",
+            "trim",
+            "truncate",
+            "type_mapping",
+            "unique",
+            "upper",
+            "upper_case",
+            "urlencode",
+        ],
+        templates: [
+            "vec.go.j2",
+        ],
+    },
+}
+*/

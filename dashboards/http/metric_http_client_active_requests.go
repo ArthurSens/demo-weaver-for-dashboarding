@@ -1,0 +1,628 @@
+package http
+
+import (
+       "github.com/prometheus/client_golang/prometheus"
+      "github.com/ArthurSens/demo-weaver-for-dashboarding/dashboards/server"
+      "github.com/ArthurSens/demo-weaver-for-dashboarding/dashboards/url"
+)
+
+// Number of active HTTP requests.
+type ClientActiveRequests struct {
+     *prometheus.GaugeVec
+     extra ClientActiveRequestsExtra
+}
+
+
+
+func NewClientActiveRequests() ClientActiveRequests {
+     labels := []string{server.AttrAddress("").Key(),server.AttrPort("").Key(),url.AttrTemplate("").Key(),AttrRequestMethod("").Key(),url.AttrScheme("").Key(),}
+     return ClientActiveRequests{ 
+        GaugeVec: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+            Name: "http_client_active_requests",
+            Help: "Number of active HTTP requests.",
+     }, labels)}
+}
+
+func (m ClientActiveRequests) With(address server.AttrAddress,port server.AttrPort,extras ...interface {UrlTemplate() url.AttrTemplate;HttpRequestMethod() AttrRequestMethod;UrlScheme() url.AttrScheme;}) prometheus.Gauge { 
+        if extras == nil { extras = append(extras, m.extra) }
+        extra := extras[0]
+    
+    return m.GaugeVec.WithLabelValues(address.Value(),port.Value(),extra.UrlTemplate().Value(),extra.HttpRequestMethod().Value(),extra.UrlScheme().Value(),)
+}
+
+// Deprecated: Use [ClientActiveRequests.With] instead
+func (m ClientActiveRequests) WithLabelValues(lvs ...string) prometheus.Gauge {
+    return m.GaugeVec.WithLabelValues(lvs...)
+}
+
+func (a ClientActiveRequests) WithUrlTemplate (attr interface { UrlTemplate() url.AttrTemplate } ) ClientActiveRequests {
+    a.extra.AttrUrlTemplate = attr.UrlTemplate()
+    return a
+}
+func (a ClientActiveRequests) WithRequestMethod (attr interface { HttpRequestMethod() AttrRequestMethod } ) ClientActiveRequests {
+    a.extra.AttrRequestMethod = attr.HttpRequestMethod()
+    return a
+}
+func (a ClientActiveRequests) WithUrlScheme (attr interface { UrlScheme() url.AttrScheme } ) ClientActiveRequests {
+    a.extra.AttrUrlScheme = attr.UrlScheme()
+    return a
+}
+
+
+type ClientActiveRequestsExtra struct {
+// The low-cardinality template of an [absolute path reference]
+//
+// [absolute path reference]: https://www.rfc-editor.org/rfc/rfc3986#section-4.2
+    AttrUrlTemplate url.AttrTemplate `otel:"url.template"`// HTTP request method
+    AttrRequestMethod AttrRequestMethod `otel:"http.request.method"`// The [URI scheme] component identifying the used protocol
+//
+// [URI scheme]: https://www.rfc-editor.org/rfc/rfc3986#section-3.1
+    AttrUrlScheme url.AttrScheme `otel:"url.scheme"`
+}
+
+func (a ClientActiveRequestsExtra) UrlTemplate() url.AttrTemplate {return a.AttrUrlTemplate}
+func (a ClientActiveRequestsExtra) HttpRequestMethod() AttrRequestMethod {return a.AttrRequestMethod}
+func (a ClientActiveRequestsExtra) UrlScheme() url.AttrScheme {return a.AttrUrlScheme}
+
+
+/*
+State {
+    name: "vec.go.j2",
+    current_block: None,
+    auto_escape: None,
+    ctx: {
+        "AttrExtra": "ClientActiveRequestsExtra",
+        "Instr": "Gauge",
+        "InstrMap": {
+            "counter": "Counter",
+            "gauge": "Gauge",
+            "histogram": "Histogram",
+            "updowncounter": "Gauge",
+        },
+        "Name": "client.active_requests",
+        "Type": "ClientActiveRequests",
+        "attributes": [
+            {
+                "brief": "Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.",
+                "examples": [
+                    "example.com",
+                    "10.1.2.80",
+                    "/tmp/my.sock",
+                ],
+                "name": "server.address",
+                "note": "In HTTP/1.1, when the [request target](https://www.rfc-editor.org/rfc/rfc9112.html#name-request-target)\nis passed in its [absolute-form](https://www.rfc-editor.org/rfc/rfc9112.html#section-3.2.2),\nthe `server.address` SHOULD match the host component of the request target.\n\nIn all other cases, `server.address` SHOULD match the host component of the\n`Host` header in HTTP/1.1 or the `:authority` pseudo-header in HTTP/2 and HTTP/3.\n",
+                "requirement_level": "required",
+                "stability": "stable",
+                "type": "string",
+            },
+            {
+                "brief": "Server port number.",
+                "examples": [
+                    80,
+                    8080,
+                    443,
+                ],
+                "name": "server.port",
+                "note": "In the case of HTTP/1.1, when the [request target](https://www.rfc-editor.org/rfc/rfc9112.html#name-request-target)\nis passed in its [absolute-form](https://www.rfc-editor.org/rfc/rfc9112.html#section-3.2.2),\nthe `server.port` SHOULD match the port component of the request target.\n\nIn all other cases, `server.port` SHOULD match the port component of the\n`Host` header in HTTP/1.1 or the `:authority` pseudo-header in HTTP/2 and HTTP/3.\n",
+                "requirement_level": "required",
+                "stability": "stable",
+                "type": "int",
+            },
+            {
+                "brief": "The low-cardinality template of an [absolute path reference](https://www.rfc-editor.org/rfc/rfc3986#section-4.2).\n",
+                "examples": [
+                    "/users/{id}",
+                    "/users/:id",
+                    "/users?id={id}",
+                ],
+                "name": "url.template",
+                "note": "The `url.template` MUST have low cardinality. It is not usually available on HTTP clients, but may be known by the application or specialized HTTP instrumentation.\n",
+                "requirement_level": {
+                    "conditionally_required": "If available.",
+                },
+                "stability": "development",
+                "type": "string",
+            },
+            {
+                "brief": "HTTP request method.",
+                "examples": [
+                    "GET",
+                    "POST",
+                    "HEAD",
+                ],
+                "name": "http.request.method",
+                "note": "HTTP request method value SHOULD be \"known\" to the instrumentation.\nBy default, this convention defines \"known\" methods as the ones listed in [RFC9110](https://www.rfc-editor.org/rfc/rfc9110.html#name-methods)\nand the PATCH method defined in [RFC5789](https://www.rfc-editor.org/rfc/rfc5789.html).\n\nIf the HTTP request method is not known to instrumentation, it MUST set the `http.request.method` attribute to `_OTHER`.\n\nIf the HTTP instrumentation could end up converting valid HTTP request methods to `_OTHER`, then it MUST provide a way to override\nthe list of known HTTP methods. If this override is done via environment variable, then the environment variable MUST be named\nOTEL_INSTRUMENTATION_HTTP_KNOWN_METHODS and support a comma-separated list of case-sensitive known HTTP methods\n(this list MUST be a full override of the default known method, it is not a list of known methods in addition to the defaults).\n\nHTTP method names are case-sensitive and `http.request.method` attribute value MUST match a known HTTP method name exactly.\nInstrumentations for specific web frameworks that consider HTTP methods to be case insensitive, SHOULD populate a canonical equivalent.\nTracing instrumentations that do so, MUST also set `http.request.method_original` to the original value.\n",
+                "requirement_level": "recommended",
+                "stability": "stable",
+                "type": {
+                    "members": [
+                        {
+                            "brief": "CONNECT method.",
+                            "id": "connect",
+                            "stability": "stable",
+                            "value": "CONNECT",
+                        },
+                        {
+                            "brief": "DELETE method.",
+                            "id": "delete",
+                            "stability": "stable",
+                            "value": "DELETE",
+                        },
+                        {
+                            "brief": "GET method.",
+                            "id": "get",
+                            "stability": "stable",
+                            "value": "GET",
+                        },
+                        {
+                            "brief": "HEAD method.",
+                            "id": "head",
+                            "stability": "stable",
+                            "value": "HEAD",
+                        },
+                        {
+                            "brief": "OPTIONS method.",
+                            "id": "options",
+                            "stability": "stable",
+                            "value": "OPTIONS",
+                        },
+                        {
+                            "brief": "PATCH method.",
+                            "id": "patch",
+                            "stability": "stable",
+                            "value": "PATCH",
+                        },
+                        {
+                            "brief": "POST method.",
+                            "id": "post",
+                            "stability": "stable",
+                            "value": "POST",
+                        },
+                        {
+                            "brief": "PUT method.",
+                            "id": "put",
+                            "stability": "stable",
+                            "value": "PUT",
+                        },
+                        {
+                            "brief": "TRACE method.",
+                            "id": "trace",
+                            "stability": "stable",
+                            "value": "TRACE",
+                        },
+                        {
+                            "brief": "Any HTTP method that the instrumentation has no prior knowledge of.",
+                            "id": "other",
+                            "stability": "stable",
+                            "value": "_OTHER",
+                        },
+                    ],
+                },
+            },
+            {
+                "brief": "The [URI scheme](https://www.rfc-editor.org/rfc/rfc3986#section-3.1) component identifying the used protocol.\n",
+                "examples": [
+                    "http",
+                    "https",
+                ],
+                "name": "url.scheme",
+                "requirement_level": "opt_in",
+                "stability": "stable",
+                "type": "string",
+            },
+        ],
+        "ctx": {
+            "annotations": {
+                "code_generation": {
+                    "metric_value_type": "int",
+                },
+            },
+            "attributes": [
+                {
+                    "brief": "The [URI scheme](https://www.rfc-editor.org/rfc/rfc3986#section-3.1) component identifying the used protocol.\n",
+                    "examples": [
+                        "http",
+                        "https",
+                    ],
+                    "name": "url.scheme",
+                    "requirement_level": "opt_in",
+                    "stability": "stable",
+                    "type": "string",
+                },
+                {
+                    "brief": "HTTP request method.",
+                    "examples": [
+                        "GET",
+                        "POST",
+                        "HEAD",
+                    ],
+                    "name": "http.request.method",
+                    "note": "HTTP request method value SHOULD be \"known\" to the instrumentation.\nBy default, this convention defines \"known\" methods as the ones listed in [RFC9110](https://www.rfc-editor.org/rfc/rfc9110.html#name-methods)\nand the PATCH method defined in [RFC5789](https://www.rfc-editor.org/rfc/rfc5789.html).\n\nIf the HTTP request method is not known to instrumentation, it MUST set the `http.request.method` attribute to `_OTHER`.\n\nIf the HTTP instrumentation could end up converting valid HTTP request methods to `_OTHER`, then it MUST provide a way to override\nthe list of known HTTP methods. If this override is done via environment variable, then the environment variable MUST be named\nOTEL_INSTRUMENTATION_HTTP_KNOWN_METHODS and support a comma-separated list of case-sensitive known HTTP methods\n(this list MUST be a full override of the default known method, it is not a list of known methods in addition to the defaults).\n\nHTTP method names are case-sensitive and `http.request.method` attribute value MUST match a known HTTP method name exactly.\nInstrumentations for specific web frameworks that consider HTTP methods to be case insensitive, SHOULD populate a canonical equivalent.\nTracing instrumentations that do so, MUST also set `http.request.method_original` to the original value.\n",
+                    "requirement_level": "recommended",
+                    "stability": "stable",
+                    "type": {
+                        "members": [
+                            {
+                                "brief": "CONNECT method.",
+                                "id": "connect",
+                                "stability": "stable",
+                                "value": "CONNECT",
+                            },
+                            {
+                                "brief": "DELETE method.",
+                                "id": "delete",
+                                "stability": "stable",
+                                "value": "DELETE",
+                            },
+                            {
+                                "brief": "GET method.",
+                                "id": "get",
+                                "stability": "stable",
+                                "value": "GET",
+                            },
+                            {
+                                "brief": "HEAD method.",
+                                "id": "head",
+                                "stability": "stable",
+                                "value": "HEAD",
+                            },
+                            {
+                                "brief": "OPTIONS method.",
+                                "id": "options",
+                                "stability": "stable",
+                                "value": "OPTIONS",
+                            },
+                            {
+                                "brief": "PATCH method.",
+                                "id": "patch",
+                                "stability": "stable",
+                                "value": "PATCH",
+                            },
+                            {
+                                "brief": "POST method.",
+                                "id": "post",
+                                "stability": "stable",
+                                "value": "POST",
+                            },
+                            {
+                                "brief": "PUT method.",
+                                "id": "put",
+                                "stability": "stable",
+                                "value": "PUT",
+                            },
+                            {
+                                "brief": "TRACE method.",
+                                "id": "trace",
+                                "stability": "stable",
+                                "value": "TRACE",
+                            },
+                            {
+                                "brief": "Any HTTP method that the instrumentation has no prior knowledge of.",
+                                "id": "other",
+                                "stability": "stable",
+                                "value": "_OTHER",
+                            },
+                        ],
+                    },
+                },
+                {
+                    "brief": "Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.",
+                    "examples": [
+                        "example.com",
+                        "10.1.2.80",
+                        "/tmp/my.sock",
+                    ],
+                    "name": "server.address",
+                    "note": "In HTTP/1.1, when the [request target](https://www.rfc-editor.org/rfc/rfc9112.html#name-request-target)\nis passed in its [absolute-form](https://www.rfc-editor.org/rfc/rfc9112.html#section-3.2.2),\nthe `server.address` SHOULD match the host component of the request target.\n\nIn all other cases, `server.address` SHOULD match the host component of the\n`Host` header in HTTP/1.1 or the `:authority` pseudo-header in HTTP/2 and HTTP/3.\n",
+                    "requirement_level": "required",
+                    "stability": "stable",
+                    "type": "string",
+                },
+                {
+                    "brief": "Server port number.",
+                    "examples": [
+                        80,
+                        8080,
+                        443,
+                    ],
+                    "name": "server.port",
+                    "note": "In the case of HTTP/1.1, when the [request target](https://www.rfc-editor.org/rfc/rfc9112.html#name-request-target)\nis passed in its [absolute-form](https://www.rfc-editor.org/rfc/rfc9112.html#section-3.2.2),\nthe `server.port` SHOULD match the port component of the request target.\n\nIn all other cases, `server.port` SHOULD match the port component of the\n`Host` header in HTTP/1.1 or the `:authority` pseudo-header in HTTP/2 and HTTP/3.\n",
+                    "requirement_level": "required",
+                    "stability": "stable",
+                    "type": "int",
+                },
+                {
+                    "brief": "The low-cardinality template of an [absolute path reference](https://www.rfc-editor.org/rfc/rfc3986#section-4.2).\n",
+                    "examples": [
+                        "/users/{id}",
+                        "/users/:id",
+                        "/users?id={id}",
+                    ],
+                    "name": "url.template",
+                    "note": "The `url.template` MUST have low cardinality. It is not usually available on HTTP clients, but may be known by the application or specialized HTTP instrumentation.\n",
+                    "requirement_level": {
+                        "conditionally_required": "If available.",
+                    },
+                    "stability": "development",
+                    "type": "string",
+                },
+            ],
+            "brief": "Number of active HTTP requests.",
+            "id": "metric.http.client.active_requests",
+            "instrument": "updowncounter",
+            "lineage": {
+                "attributes": {
+                    "http.request.method": {
+                        "inherited_fields": [
+                            "brief",
+                            "examples",
+                            "note",
+                            "stability",
+                        ],
+                        "locally_overridden_fields": [
+                            "requirement_level",
+                        ],
+                        "source_group": "registry.http",
+                    },
+                    "server.address": {
+                        "inherited_fields": [
+                            "brief",
+                            "examples",
+                            "stability",
+                        ],
+                        "locally_overridden_fields": [
+                            "note",
+                            "requirement_level",
+                        ],
+                        "source_group": "registry.server",
+                    },
+                    "server.port": {
+                        "inherited_fields": [
+                            "brief",
+                            "examples",
+                            "stability",
+                        ],
+                        "locally_overridden_fields": [
+                            "note",
+                            "requirement_level",
+                        ],
+                        "source_group": "registry.server",
+                    },
+                    "url.scheme": {
+                        "inherited_fields": [
+                            "brief",
+                            "note",
+                            "stability",
+                        ],
+                        "locally_overridden_fields": [
+                            "examples",
+                            "requirement_level",
+                        ],
+                        "source_group": "registry.url",
+                    },
+                    "url.template": {
+                        "inherited_fields": [
+                            "brief",
+                            "examples",
+                            "stability",
+                        ],
+                        "locally_overridden_fields": [
+                            "note",
+                            "requirement_level",
+                        ],
+                        "source_group": "registry.url",
+                    },
+                },
+                "provenance": {
+                    "path": "https://github.com/open-telemetry/semantic-conventions.git[model]/http/metrics.yaml",
+                    "registry_id": "main",
+                },
+            },
+            "metric_name": "http.client.active_requests",
+            "root_namespace": "http",
+            "stability": "development",
+            "type": "metric",
+            "unit": "{request}",
+        },
+        "for_each_attr": <macro for_each_attr>,
+        "module": "github.com/ArthurSens/demo-weaver-for-dashboarding/dashboards",
+    },
+    env: Environment {
+        globals: {
+            "concat_if": weaver_forge::extensions::util::concat_if,
+            "cycler": minijinja_contrib::globals::cycler,
+            "debug": minijinja::functions::builtins::debug,
+            "dict": minijinja::functions::builtins::dict,
+            "joiner": minijinja_contrib::globals::joiner,
+            "namespace": minijinja::functions::builtins::namespace,
+            "params": {
+                "params": {},
+            },
+            "range": minijinja::functions::builtins::range,
+            "template": {},
+        },
+        tests: [
+            "!=",
+            "<",
+            "<=",
+            "==",
+            ">",
+            ">=",
+            "array",
+            "boolean",
+            "defined",
+            "deprecated",
+            "divisibleby",
+            "endingwith",
+            "enum",
+            "enum_type",
+            "eq",
+            "equalto",
+            "escaped",
+            "even",
+            "experimental",
+            "false",
+            "filter",
+            "float",
+            "ge",
+            "greaterthan",
+            "gt",
+            "in",
+            "int",
+            "integer",
+            "iterable",
+            "le",
+            "lessthan",
+            "lower",
+            "lt",
+            "mapping",
+            "ne",
+            "none",
+            "number",
+            "odd",
+            "safe",
+            "sameas",
+            "sequence",
+            "simple_type",
+            "stable",
+            "startingwith",
+            "string",
+            "template_type",
+            "test",
+            "true",
+            "undefined",
+            "upper",
+        ],
+        filters: [
+            "abs",
+            "acronym",
+            "ansi_bg_black",
+            "ansi_bg_blue",
+            "ansi_bg_bright_black",
+            "ansi_bg_bright_blue",
+            "ansi_bg_bright_cyan",
+            "ansi_bg_bright_green",
+            "ansi_bg_bright_magenta",
+            "ansi_bg_bright_red",
+            "ansi_bg_bright_white",
+            "ansi_bg_bright_yellow",
+            "ansi_bg_cyan",
+            "ansi_bg_green",
+            "ansi_bg_magenta",
+            "ansi_bg_red",
+            "ansi_bg_white",
+            "ansi_bg_yellow",
+            "ansi_black",
+            "ansi_blue",
+            "ansi_bold",
+            "ansi_bright_black",
+            "ansi_bright_blue",
+            "ansi_bright_cyan",
+            "ansi_bright_green",
+            "ansi_bright_magenta",
+            "ansi_bright_red",
+            "ansi_bright_white",
+            "ansi_bright_yellow",
+            "ansi_cyan",
+            "ansi_green",
+            "ansi_italic",
+            "ansi_magenta",
+            "ansi_red",
+            "ansi_strikethrough",
+            "ansi_underline",
+            "ansi_white",
+            "ansi_yellow",
+            "attr",
+            "attribute_id",
+            "attribute_namespace",
+            "attribute_registry_file",
+            "attribute_registry_namespace",
+            "attribute_registry_title",
+            "attribute_sort",
+            "batch",
+            "body_fields",
+            "bool",
+            "camel_case",
+            "camel_case_const",
+            "capitalize",
+            "capitalize_first",
+            "chain",
+            "comment",
+            "comment_with_prefix",
+            "count",
+            "d",
+            "default",
+            "dictsort",
+            "e",
+            "enum_type",
+            "escape",
+            "filesizeformat",
+            "first",
+            "flatten",
+            "float",
+            "groupby",
+            "indent",
+            "instantiated_type",
+            "int",
+            "items",
+            "join",
+            "kebab_case",
+            "kebab_case_const",
+            "last",
+            "length",
+            "lines",
+            "list",
+            "lower",
+            "lower_case",
+            "map",
+            "map_text",
+            "markdown_to_html",
+            "max",
+            "metric_namespace",
+            "min",
+            "not_required",
+            "pascal_case",
+            "pascal_case_const",
+            "pluralize",
+            "pprint",
+            "print_member_value",
+            "regex_replace",
+            "reject",
+            "rejectattr",
+            "replace",
+            "required",
+            "reverse",
+            "round",
+            "safe",
+            "screaming_kebab_case",
+            "screaming_snake_case",
+            "screaming_snake_case_const",
+            "select",
+            "selectattr",
+            "slice",
+            "snake_case",
+            "snake_case_const",
+            "sort",
+            "split",
+            "split_id",
+            "string",
+            "striptags",
+            "sum",
+            "title",
+            "title_case",
+            "tojson",
+            "toyaml",
+            "trim",
+            "truncate",
+            "type_mapping",
+            "unique",
+            "upper",
+            "upper_case",
+            "urlencode",
+        ],
+        templates: [
+            "vec.go.j2",
+        ],
+    },
+}
+*/

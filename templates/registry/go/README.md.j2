@@ -1,0 +1,9 @@
+# {{ctx.root_namespace }} Metrics
+{%- set metrics = ctx.metrics -%}
+
+{% for metric in metrics %}
+### {{metric.id}}
+
+{{metric.brief}}
+
+{% endfor %}

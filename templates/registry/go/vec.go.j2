@@ -1,0 +1,112 @@
+package {{ctx.root_namespace | replace("go", "golang")}}
+
+{%- set attributes = ctx.attributes | attribute_sort %}
+{%- set module = params.module | default("github.com/ArthurSens/demo-weaver-for-dashboarding/dashboards") %}
+
+import (
+       "github.com/prometheus/client_golang/prometheus"
+{%- for pkg in attributes | map(attribute="name") | map("attribute_namespace") | unique %}
+   {%- if pkg != ctx.root_namespace %}
+      "{{module}}/{{pkg}}"
+   {%- endif -%}
+{%- endfor%}
+)
+
+{%- set Name = (ctx.id | split_id)[2:] | join(".") -%}
+
+{%- set Type = Name | pascal_case -%}
+{%- set AttrExtra = Type + "Extra" -%}
+
+{%- set InstrMap = {
+   "histogram": "Histogram",
+   "gauge": "Gauge",
+   "counter": "Counter",
+   "updowncounter": "Gauge",
+}%}
+{%- set Instr = InstrMap[ctx.instrument] | default("TODO_"+ctx.instrument) %}
+
+// {{ctx.brief | trim}}
+type {{Type}} struct {
+     *prometheus.{{Instr}}Vec
+     extra {{AttrExtra}}
+}
+
+{% macro for_each_attr(attrs) %}
+    {%- for raw in attrs -%}
+        {%- set attr = namespace(raw) -%}
+        {%- set attr.id = attr.name -%}
+        {%- set attr.namespace = attr.name | attribute_namespace -%}
+        {%- set attr.name = attr.name | attribute_id | pascal_case -%}
+        {%- set attr.arg = attr.name | replace("Type", "Kind") | camel_case -%}
+        {%- set attr.fullname = (attr.id | pascal_case) if attr.namespace != ctx.root_namespace else attr.name -%}
+        {%- set attr.pkg = attr.namespace+"." if attr.namespace != ctx.root_namespace else "" -%}
+        {%- set attr.type = "Attr"+(attr.name|pascal_case) -%}
+        {%- set attr.ref = attr.pkg+attr.type -%}
+        {%- set attr.getter = attr.id|pascal_case -%}
+        {%- set attr.field = "Attr"+attr.fullname -%}
+        {{ caller(attr) }}
+    {%- endfor -%}
+{% endmacro%}
+
+func New{{Type}}() {{Type}} {
+     labels := []string{
+        {%- call(attr) for_each_attr(attributes) -%}
+            {{attr.ref}}("").Key(),
+        {%- endcall -%}
+     }
+     return {{Type}}{ 
+        {{Instr}}Vec: prometheus.New{{Instr}}Vec(prometheus.{{Instr}}Opts{
+            Name: "{{ctx.metric_name | snake_case}}",
+            Help: "{{ctx.brief | trim }}",
+     }, labels)}
+}
+
+func (m {{Type}}) With(
+{%- call(attr) for_each_attr(attributes|required) -%}
+    {{attr.arg}} {{attr.ref}},
+{%- endcall -%}
+extras ...interface {
+{%- call(attr) for_each_attr(attributes|not_required) -%}
+    {{attr.getter}}() {{attr.ref}};
+{%- endcall -%}
+}) prometheus.{{Instr | replace("Histogram", "Observer")}} {
+    {%- if attributes | not_required | length > 0 %} 
+        if extras == nil { extras = append(extras, m.extra) }
+        extra := extras[0]
+    {% endif %}
+    return m.{{Instr}}Vec.WithLabelValues(
+        {%- call(attr) for_each_attr(attributes|required) -%}
+            {{attr.arg}}.Value(),
+        {%- endcall -%}
+        {%- call(attr) for_each_attr(attributes|not_required) -%}
+            extra.{{attr.getter}}().Value(),
+        {%- endcall -%}
+     )
+}
+
+// Deprecated: Use [{{Type}}.With] instead
+func (m {{Type}}) WithLabelValues(lvs ...string) prometheus.{{Instr | replace("Histogram", "Observer")}} {
+    return m.{{Instr}}Vec.WithLabelValues(lvs...)
+}
+
+{% call(attr) for_each_attr(attributes|not_required) -%}
+func (a {{Type}}) With{{attr.fullname}} (attr interface { {{ attr.getter }}() {{attr.ref}} } ) {{Type}} {
+    a.extra.{{attr.field}} = attr.{{attr.getter}}()
+    return a
+}
+{% endcall %}
+
+type {{AttrExtra}} struct {
+{% call(attr) for_each_attr(attributes|not_required) -%}
+    {{attr.brief | comment}}
+    {{attr.field}} {{attr.ref}} `otel:"{{attr.id}}"`
+{%- endcall %}
+}
+
+{% call(attr) for_each_attr(attributes|not_required) -%}
+    func (a {{AttrExtra}}) {{attr.getter}}() {{attr.ref}} {return a.{{attr.field}}}
+{% endcall %}
+
+/*
+{{ debug() }}
+*/

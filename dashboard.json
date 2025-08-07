@@ -1,0 +1,271 @@
+{
+  "uid": "http-dashboard",
+  "title": "http",
+  "tags": [
+    "built-with-weaver"
+  ],
+  "timezone": "browser",
+  "editable": true,
+  "graphTooltip": 0,
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "fiscalYearStartMonth": 0,
+  "refresh": "5m",
+  "schemaVersion": 39,
+  "panels": [
+    {
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(metric_http_client_active_requests[$__rate_interval])",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "__auto",
+          "refId": ""
+        }
+      ],
+      "title": "Number of active HTTP requests.",
+      "transparent": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(metric_http_client_connection_duration[$__rate_interval])",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "__auto",
+          "refId": ""
+        }
+      ],
+      "title": "The duration of the successfully established outbound HTTP connections.",
+      "transparent": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      }
+    },
+    {
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(metric_http_client_open_connections[$__rate_interval])",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "__auto",
+          "refId": ""
+        }
+      ],
+      "title": "Number of outbound HTTP connections that are currently active or idle on the client.",
+      "transparent": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 9
+      }
+    },
+    {
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(metric_http_client_request_body_size[$__rate_interval])",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "__auto",
+          "refId": ""
+        }
+      ],
+      "title": "Size of HTTP client request bodies.",
+      "transparent": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 9
+      }
+    },
+    {
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(metric_http_client_request_duration[$__rate_interval])",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "__auto",
+          "refId": ""
+        }
+      ],
+      "title": "Duration of HTTP client requests.",
+      "transparent": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      }
+    },
+    {
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(metric_http_client_response_body_size[$__rate_interval])",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "__auto",
+          "refId": ""
+        }
+      ],
+      "title": "Size of HTTP client response bodies.",
+      "transparent": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      }
+    },
+    {
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(metric_http_server_active_requests[$__rate_interval])",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "__auto",
+          "refId": ""
+        }
+      ],
+      "title": "Number of active HTTP server requests.",
+      "transparent": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 27
+      }
+    },
+    {
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(metric_http_server_request_body_size[$__rate_interval])",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "__auto",
+          "refId": ""
+        }
+      ],
+      "title": "Size of HTTP server request bodies.",
+      "transparent": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 27
+      }
+    },
+    {
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(metric_http_server_request_duration[$__rate_interval])",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "__auto",
+          "refId": ""
+        }
+      ],
+      "title": "Duration of HTTP server requests.",
+      "transparent": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 36
+      }
+    },
+    {
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(metric_http_server_response_body_size[$__rate_interval])",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "__auto",
+          "refId": ""
+        }
+      ],
+      "title": "Size of HTTP server response bodies.",
+      "transparent": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 36
+      }
+    }
+  ],
+  "templating": {},
+  "annotations": {}
+}
