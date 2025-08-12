@@ -9,6 +9,9 @@ import (
 	"github.com/grafana/grafana-foundation-sdk/go/cog"
 	"github.com/grafana/grafana-foundation-sdk/go/common"
 	"github.com/grafana/grafana-foundation-sdk/go/dashboard"
+	{%- if metrics | selectattr("instrument", "equalto", "gauge") | list | length > 0 %}
+	"github.com/grafana/grafana-foundation-sdk/go/gauge"
+	{%- endif %}
 	"github.com/grafana/grafana-foundation-sdk/go/prometheus"
 	"github.com/grafana/grafana-foundation-sdk/go/timeseries"
 )
@@ -28,9 +31,70 @@ func main() {
 	Time("now-1h", "now").
 	Timezone(common.TimeZoneBrowser).
 	{%- for metric in metrics %}
+	{%- if metric.instrument == "gauge" %}
+	WithPanel(
+		gauge.NewPanelBuilder().
+			Title("{{metric.brief | replace('\n', '\\n') | replace('"', '\\"')}}").
+			Datasource(prometheusDataSourceRef).
+			WithTarget(
+				prometheus.NewDataqueryBuilder().
+					Expr("{{metric.metric_name}}").
+					Range().
+					Format(prometheus.PromQueryFormatTimeSeries).
+					LegendFormat("__auto"),
+			),
+	){% if not loop.last %}.{% endif %}
+	{%- elif metric.instrument == "histogram" %}
 	WithPanel(
 		timeseries.NewPanelBuilder().
-			Title("{{metric.brief}}").
+			Title("{{metric.brief | replace('\n', '\\n') | replace('"', '\\"')}}").
+			Datasource(prometheusDataSourceRef).
+			WithTarget(
+				prometheus.NewDataqueryBuilder().
+					Expr("histogram_quantile(0.99, rate({{metric.metric_name}}_bucket[$__rate_interval]))").
+					Range().
+					Format(prometheus.PromQueryFormatTimeSeries).
+					LegendFormat("p99"),
+			).
+			WithTarget(
+				prometheus.NewDataqueryBuilder().
+					Expr("histogram_quantile(0.90, rate({{metric.metric_name}}_bucket[$__rate_interval]))").
+					Range().
+					Format(prometheus.PromQueryFormatTimeSeries).
+					LegendFormat("p90"),
+			).
+			WithTarget(
+				prometheus.NewDataqueryBuilder().
+					Expr("histogram_quantile(0.50, rate({{metric.metric_name}}_bucket[$__rate_interval]))").
+					Range().
+					Format(prometheus.PromQueryFormatTimeSeries).
+					LegendFormat("p50"),
+			).
+			WithTarget(
+				prometheus.NewDataqueryBuilder().
+					Expr("rate({{metric.metric_name}}_sum[$__rate_interval]) / rate({{metric.metric_name}}_count[$__rate_interval])").
+					Range().
+					Format(prometheus.PromQueryFormatTimeSeries).
+					LegendFormat("average"),
+			),
+	){% if not loop.last %}.{% endif %}
+	{%- elif metric.instrument == "updowncounter" %}
+	WithPanel(
+		timeseries.NewPanelBuilder().
+			Title("{{metric.brief | replace('\n', '\\n') | replace('"', '\\"')}}").
+			Datasource(prometheusDataSourceRef).
+			WithTarget(
+				prometheus.NewDataqueryBuilder().
+					Expr("sum({{metric.metric_name}})").
+					Range().
+					Format(prometheus.PromQueryFormatTimeSeries).
+					LegendFormat("__auto"),
+			),
+	){% if not loop.last %}.{% endif %}
+	{%- else %}
+	WithPanel(
+		timeseries.NewPanelBuilder().
+			Title("{{metric.brief | replace('\n', '\\n') | replace('"', '\\"')}}").
 			Datasource(prometheusDataSourceRef).
 			WithTarget(
 				prometheus.NewDataqueryBuilder().
@@ -40,6 +104,7 @@ func main() {
 					LegendFormat("__auto"),
 			),
 	){% if not loop.last %}.{% endif %}
+	{%- endif %}
 	{%- endfor %}
 
   // Build the dashboard - errors in configuration will be thrown here
