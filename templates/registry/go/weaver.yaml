@@ -1,3 +1,5 @@
+params:
+  excluded_attributes: []
 templates:
   - template: attr.go.j2
     application_mode: each
