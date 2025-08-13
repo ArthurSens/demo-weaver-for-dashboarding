@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% block body %}
+<div role=feed>
+  {% for book in books | sort(attribute="id") %}
+  <article class="box" aria-labelledby={{book.id}}-label>
+    <h2 id={{book.id}}-label>{{ book.title }}</h2>
+    <dl>
+      <dt>Author</dt>
+      <dd>{{ book.author }}</dd>
+      <dt>Location</dt>
+      <dd>{{ book.location }}</dd>
+      <dt>Status</dt>
+      <dd>{% if book.borrowed_at %} <chip class="bad">Borrowed</chip> {% else %} <chip class="ok">Available</chip> {% endif %}</dd>
+    </dl>
+    {% if not book.borrowed_at %}
+    <form method="POST" action="/books/{{ book.id }}/borrow">
+      <button class="info">Borrow</button>
+    </form>
+    {% else %}
+    <form method="POST" action="/books/{{ book.id }}/return">
+      <button class="info">Return</button>
+    </form>
+    {% endif %}
+  </article>
+  {% endfor %}
+</div>
+{% endblock %}
