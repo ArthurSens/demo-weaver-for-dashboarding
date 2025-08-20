@@ -98,7 +98,7 @@ func main() {
 			Datasource(prometheusDataSourceRef).
 			WithTarget(
 				prometheus.NewDataqueryBuilder().
-					Expr("rate({{metric.metric_name}}[$__rate_interval])").
+					Expr("rate({{metric.metric_name | snake_case }}[$__rate_interval])").
 					Range().
 					Format(prometheus.PromQueryFormatTimeSeries).
 					LegendFormat("__auto"),

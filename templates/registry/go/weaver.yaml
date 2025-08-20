@@ -1,30 +1,57 @@
+params:
+  # you cal also pass it as a command line argument, it'd override the value here
+  # e.g. `weaver registry generate  --registry=../semantic-conventions/model --templates=./templates go ./output --param included_namespaces="db,http"`
+  # it's slightly buggy - string inclusion is not the same as list inclusion, so TODO
+  included_namespaces: ["http"]
+
 templates:
+  # TODO - should we do it in the same way as here - https://github.com/open-telemetry/opentelemetry-go/blob/main/semconv/v1.36.0/httpconv/metric.go?
+  # i.e. generate attribute types inside the metric file
   - template: attr.go.j2
     application_mode: each
     file_name: "{{ctx.root_namespace}}/attributes.go"
+    # we're going to generate only the attributes that are used by the metrics we're generating
     filter: >
-      semconv_grouped_attributes
+      (semconv_grouped_metrics({"exclude_deprecated": true})
+      | [.[]
+        | select (($included_namespaces | length == 0) or (.root_namespace as $ns | $included_namespaces | index($ns)))
+        | .metrics
+        | .[].attributes[].name ]
+      | unique) as $relevant_attr_names
+      | semconv_grouped_attributes({"exclude_deprecated": true})
+      | map({root_namespace: .root_namespace, attributes: .attributes | map(select(.name as $n | $relevant_attr_names | index($n))) | select(length > 0)})
+
   - template: go.mod.j2
     file_name: "{{ctx.root_namespace}}/go.mod"
     application_mode: each
     filter: >
-      semconv_metrics 
+      semconv_grouped_metrics({"exclude_deprecated": true})
+      | .[]
+      | select (($included_namespaces | length == 0) or (.root_namespace as $ns | $included_namespaces | index($ns)))
   - template: vec.go.j2
     application_mode: each
-    file_name: "{{ctx.root_namespace}}/{{ctx.id | snake_case}}.go"
+    file_name: "{{ctx.root_namespace}}/{{ctx.metric_name | snake_case}}.go"
     filter: >
-      semconv_metrics | .[] | select((.attributes|length) > 0)
+      semconv_grouped_metrics({"exclude_deprecated": true})
+      | map(.metrics)
+      | flatten
+      | .[]
+      | select (($included_namespaces | length == 0) or (.root_namespace as $ns | $included_namespaces | index($ns)))
   - template: README.md.j2
     file_name: "{{ctx.root_namespace}}/README.md"
     application_mode: each
     filter: >
-      semconv_metrics | semconv_group_metrics_by_root_namespace
+      semconv_grouped_metrics({"exclude_deprecated": true})
+      | flatten
+      | .[]
+      | select (($included_namespaces | length == 0) or (.root_namespace as $ns | $included_namespaces | index($ns)))
   - template: dashboard-builder.go.j2
     file_name: "{{ctx.root_namespace}}/dashboard.go"
     application_mode: each
     filter: >
-      semconv_metrics | semconv_group_metrics_by_root_namespace
-
+      semconv_grouped_metrics({"exclude_deprecated": true})
+      | .[]
+      | select (($included_namespaces | length == 0) or (.root_namespace as $ns | $included_namespaces | index($ns)))
 
 acronyms: [TLS, RTT, DNS, SHA]
 
@@ -37,3 +64,10 @@ comment_formats:
     trim: true
     remove_trailing_dots: true
 default_comment_format: go
+
+text_maps:
+  go_instrument_type:
+    counter: Counter
+    histogram: Histogram
+    updowncounter: Gauge
+    gauge: Gauge
