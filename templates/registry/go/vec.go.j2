@@ -17,13 +17,7 @@ import (
 {%- set Type = Name | pascal_case -%}
 {%- set AttrExtra = Type + "Extra" -%}
 
-{%- set InstrMap = {
-   "histogram": "Histogram",
-   "gauge": "Gauge",
-   "counter": "Counter",
-   "updowncounter": "Gauge",
-}%}
-{%- set Instr = InstrMap[ctx.instrument] | default("TODO_"+ctx.instrument) %}
+{%- set Instr = ctx.instrument | map_text("go_instrument_type") %}
 
 // {{ctx.brief | trim}}
 type {{Type}} struct {
@@ -54,7 +48,7 @@ func New{{Type}}() {{Type}} {
             {{attr.ref}}("").Key(),
         {%- endcall -%}
      }
-     return {{Type}}{ 
+     return {{Type}}{
         {{Instr}}Vec: prometheus.New{{Instr}}Vec(prometheus.{{Instr}}Opts{
             Name: "{{ctx.metric_name | snake_case}}",
             Help: "{{ctx.brief | trim }}",
@@ -70,7 +64,7 @@ extras ...interface {
     {{attr.getter}}() {{attr.ref}};
 {%- endcall -%}
 }) prometheus.{{Instr | replace("Histogram", "Observer")}} {
-    {%- if attributes | not_required | length > 0 %} 
+    {%- if attributes | not_required | length > 0 %}
         if extras == nil { extras = append(extras, m.extra) }
         extra := extras[0]
     {% endif %}
