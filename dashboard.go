@@ -1,4 +1,4 @@
-package http
+package main
 
 // Debug output completed - metric structure discovered:
 // - metric.brief: Panel title/description
