@@ -19,7 +19,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "rate(metric_http_client_active_requests[$__rate_interval])",
+          "expr": "sum(http.client.active_requests)",
           "instant": false,
           "range": true,
           "format": "time_series",
@@ -44,11 +44,35 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "rate(metric_http_client_connection_duration[$__rate_interval])",
+          "expr": "histogram_quantile(0.99, rate(http.client.connection.duration_bucket[$__rate_interval]))",
           "instant": false,
           "range": true,
           "format": "time_series",
-          "legendFormat": "__auto",
+          "legendFormat": "p99",
+          "refId": ""
+        },
+        {
+          "expr": "histogram_quantile(0.90, rate(http.client.connection.duration_bucket[$__rate_interval]))",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "p90",
+          "refId": ""
+        },
+        {
+          "expr": "histogram_quantile(0.50, rate(http.client.connection.duration_bucket[$__rate_interval]))",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "p50",
+          "refId": ""
+        },
+        {
+          "expr": "rate(http.client.connection.duration_sum[$__rate_interval]) / rate(http.client.connection.duration_count[$__rate_interval])",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "average",
           "refId": ""
         }
       ],
@@ -69,7 +93,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "rate(metric_http_client_open_connections[$__rate_interval])",
+          "expr": "sum(http.client.open_connections)",
           "instant": false,
           "range": true,
           "format": "time_series",
@@ -94,11 +118,35 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "rate(metric_http_client_request_body_size[$__rate_interval])",
+          "expr": "histogram_quantile(0.99, rate(http.client.request.body.size_bucket[$__rate_interval]))",
           "instant": false,
           "range": true,
           "format": "time_series",
-          "legendFormat": "__auto",
+          "legendFormat": "p99",
+          "refId": ""
+        },
+        {
+          "expr": "histogram_quantile(0.90, rate(http.client.request.body.size_bucket[$__rate_interval]))",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "p90",
+          "refId": ""
+        },
+        {
+          "expr": "histogram_quantile(0.50, rate(http.client.request.body.size_bucket[$__rate_interval]))",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "p50",
+          "refId": ""
+        },
+        {
+          "expr": "rate(http.client.request.body.size_sum[$__rate_interval]) / rate(http.client.request.body.size_count[$__rate_interval])",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "average",
           "refId": ""
         }
       ],
@@ -119,11 +167,35 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "rate(metric_http_client_request_duration[$__rate_interval])",
+          "expr": "histogram_quantile(0.99, rate(http.client.request.duration_bucket[$__rate_interval]))",
           "instant": false,
           "range": true,
           "format": "time_series",
-          "legendFormat": "__auto",
+          "legendFormat": "p99",
+          "refId": ""
+        },
+        {
+          "expr": "histogram_quantile(0.90, rate(http.client.request.duration_bucket[$__rate_interval]))",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "p90",
+          "refId": ""
+        },
+        {
+          "expr": "histogram_quantile(0.50, rate(http.client.request.duration_bucket[$__rate_interval]))",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "p50",
+          "refId": ""
+        },
+        {
+          "expr": "rate(http.client.request.duration_sum[$__rate_interval]) / rate(http.client.request.duration_count[$__rate_interval])",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "average",
           "refId": ""
         }
       ],
@@ -144,11 +216,35 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "rate(metric_http_client_response_body_size[$__rate_interval])",
+          "expr": "histogram_quantile(0.99, rate(http.client.response.body.size_bucket[$__rate_interval]))",
           "instant": false,
           "range": true,
           "format": "time_series",
-          "legendFormat": "__auto",
+          "legendFormat": "p99",
+          "refId": ""
+        },
+        {
+          "expr": "histogram_quantile(0.90, rate(http.client.response.body.size_bucket[$__rate_interval]))",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "p90",
+          "refId": ""
+        },
+        {
+          "expr": "histogram_quantile(0.50, rate(http.client.response.body.size_bucket[$__rate_interval]))",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "p50",
+          "refId": ""
+        },
+        {
+          "expr": "rate(http.client.response.body.size_sum[$__rate_interval]) / rate(http.client.response.body.size_count[$__rate_interval])",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "average",
           "refId": ""
         }
       ],
@@ -169,7 +265,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "rate(metric_http_server_active_requests[$__rate_interval])",
+          "expr": "sum(http.server.active_requests)",
           "instant": false,
           "range": true,
           "format": "time_series",
@@ -194,11 +290,35 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "rate(metric_http_server_request_body_size[$__rate_interval])",
+          "expr": "histogram_quantile(0.99, rate(http.server.request.body.size_bucket[$__rate_interval]))",
           "instant": false,
           "range": true,
           "format": "time_series",
-          "legendFormat": "__auto",
+          "legendFormat": "p99",
+          "refId": ""
+        },
+        {
+          "expr": "histogram_quantile(0.90, rate(http.server.request.body.size_bucket[$__rate_interval]))",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "p90",
+          "refId": ""
+        },
+        {
+          "expr": "histogram_quantile(0.50, rate(http.server.request.body.size_bucket[$__rate_interval]))",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "p50",
+          "refId": ""
+        },
+        {
+          "expr": "rate(http.server.request.body.size_sum[$__rate_interval]) / rate(http.server.request.body.size_count[$__rate_interval])",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "average",
           "refId": ""
         }
       ],
@@ -219,11 +339,35 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "rate(metric_http_server_request_duration[$__rate_interval])",
+          "expr": "histogram_quantile(0.99, rate(http.server.request.duration_bucket[$__rate_interval]))",
           "instant": false,
           "range": true,
           "format": "time_series",
-          "legendFormat": "__auto",
+          "legendFormat": "p99",
+          "refId": ""
+        },
+        {
+          "expr": "histogram_quantile(0.90, rate(http.server.request.duration_bucket[$__rate_interval]))",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "p90",
+          "refId": ""
+        },
+        {
+          "expr": "histogram_quantile(0.50, rate(http.server.request.duration_bucket[$__rate_interval]))",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "p50",
+          "refId": ""
+        },
+        {
+          "expr": "rate(http.server.request.duration_sum[$__rate_interval]) / rate(http.server.request.duration_count[$__rate_interval])",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "average",
           "refId": ""
         }
       ],
@@ -244,11 +388,35 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "rate(metric_http_server_response_body_size[$__rate_interval])",
+          "expr": "histogram_quantile(0.99, rate(http.server.response.body.size_bucket[$__rate_interval]))",
           "instant": false,
           "range": true,
           "format": "time_series",
-          "legendFormat": "__auto",
+          "legendFormat": "p99",
+          "refId": ""
+        },
+        {
+          "expr": "histogram_quantile(0.90, rate(http.server.response.body.size_bucket[$__rate_interval]))",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "p90",
+          "refId": ""
+        },
+        {
+          "expr": "histogram_quantile(0.50, rate(http.server.response.body.size_bucket[$__rate_interval]))",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "p50",
+          "refId": ""
+        },
+        {
+          "expr": "rate(http.server.response.body.size_sum[$__rate_interval]) / rate(http.server.response.body.size_count[$__rate_interval])",
+          "instant": false,
+          "range": true,
+          "format": "time_series",
+          "legendFormat": "average",
           "refId": ""
         }
       ],
