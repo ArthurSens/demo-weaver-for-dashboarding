@@ -1,21 +1,28 @@
 # demo-weaver-for-dashboarding
 
-Generate all metrics and relevant attributes:
+## Client SDKs
+
+To generate the go client for use in the backend application run the following command:
 
 ```bash
-weaver registry generate  --registry=../semantic-conventions/model --templates=./templates go ./output
+weaver registry generate --templates=./templates --registry ./semconv go ./generated/client/go
 ```
 
-Generate metrics and relevant attributes in specific namespaces:
+You can add the `--param included_namespaces="db,http"` flag to limit generation to specific namespaces
+
+## Grafana dashboards
+
+To generate dashboards:
 
 ```bash
-weaver registry generate  --registry=../semantic-conventions/model --templates=./templates go ./output --param included_namespaces="db,http"
+weaver registry generate --templates=./templates --registry ./semconv go ./generated/dashboards
 ```
 
-Generate dashboards:
+The `included_namespaces` param also works for dashboards
 
-```bash
-weaver registry generate  --registry=../semantic-conventions/model --templates=./templates go ./output
+## Demo applications
+
+Run the demo backend application (requires generating the client library first):
 ```
-
-The `included_namespaces` param can also be used for dashboards
+go run ./applications/backend/main.go
+```
