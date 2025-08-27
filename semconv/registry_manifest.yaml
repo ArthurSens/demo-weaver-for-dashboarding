@@ -1,0 +1,7 @@
+name: demo-library
+description: Custom Conventions for the Library Application
+semconv_version: 0.0.1
+schema_base_url: github.com/ArthurSens/demo-weaver-for-dashboarding/semconv
+dependencies:
+  - name: otel
+    registry_path: https://github.com/open-telemetry/semantic-conventions/archive/refs/tags/v1.34.0.zip[model]
