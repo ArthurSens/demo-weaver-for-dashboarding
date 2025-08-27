@@ -1,0 +1,11 @@
+groups:
+  - id: registry.library
+    type: attribute_group
+    display_name: Library Attributes
+    brief: Domain specific attributes for library applications
+    attributes:
+      - id: library.location
+        type: string
+        brief: Location identifier of the library
+        stability: development
+        examples: ["Vienna/1110"]
