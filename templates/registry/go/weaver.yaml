@@ -46,13 +46,6 @@ templates:
       | flatten
       | .[]
       | select (($included_namespaces | length == 0) or (.root_namespace as $ns | $included_namespaces | index($ns)))
-  - template: dashboard-builder.go.j2
-    file_name: "{{ctx.root_namespace}}/dashboard.go"
-    application_mode: each
-    filter: >
-      semconv_grouped_metrics({"exclude_deprecated": true})
-      | .[]
-      | select (($included_namespaces | length == 0) or (.root_namespace as $ns | $included_namespaces | index($ns)))
 
 acronyms: [TLS, RTT, DNS, SHA]
 
