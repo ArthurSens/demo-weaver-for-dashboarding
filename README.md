@@ -1,6 +1,6 @@
 # demo-weaver-for-dashboarding
 
-Generate all metrics and attributes used by them:
+Generate all metrics and relevant attributes:
 
 ```bash
 weaver registry generate  --registry=../semantic-conventions/model --templates=./templates go ./output
