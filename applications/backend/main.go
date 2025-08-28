@@ -5,6 +5,11 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
+	httpconv "github.com/ArthurSens/demo-weaver-for-dashboarding/generated/client/go/http"
 )
 
 type Book struct {
@@ -33,13 +38,24 @@ func main() {
 			ReturnedAt: time.Date(2025, 4, 16, 17, 42, 0, 0, time.UTC),
 		},
 	}
+
+	requestDurations := httpconv.NewServerRequestDuration()
+	prometheus.Register(requestDurations)
+	recordRequestDuration := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			start := time.Now()
+			next.ServeHTTP(w, r)
+			requestDurations.With(httpconv.RequestMethodAttr(r.Method), httpconv.UrlSchemeAttr("http"), httpconv.RouteAttr(r.Pattern)).Observe(float64(time.Since(start).Seconds()))
+		})
+	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /books", HandleGetBooks(books))
 	mux.HandleFunc("POST /books/{id}/borrow", HandlePostBorrow(books))
 	mux.HandleFunc("POST /books/{id}/return", HandlePostReturn(books))
 	mux.HandleFunc("POST /books/", HandlePostBooks(books))
+	mux.Handle("GET /metrics", promhttp.Handler())
 	slog.Info("starting backend server", "addr", ":8080")
-	http.ListenAndServe(":8080", mux)
+	http.ListenAndServe(":8080", recordRequestDuration(mux))
 }
 
 func HandleGetBooks(books map[string]*Book) http.HandlerFunc {

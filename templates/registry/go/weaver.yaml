@@ -5,37 +5,11 @@ params:
   included_namespaces: []
 
 templates:
-  # TODO - should we do it in the same way as here - https://github.com/open-telemetry/opentelemetry-go/blob/main/semconv/v1.36.0/httpconv/metric.go?
-  # i.e. generate attribute types inside the metric file
-  - template: attr.go.j2
-    application_mode: each
-    file_name: "{{ctx.root_namespace}}/attributes.go"
-    # we're going to generate only the attributes that are used by the metrics we're generating
-    filter: >
-      (semconv_grouped_metrics({"exclude_deprecated": true})
-      | [.[]
-        | select (($included_namespaces | length == 0) or (.root_namespace as $ns | $included_namespaces | index($ns)))
-        | .metrics?[]
-        | .attributes // []
-        | .[].name ]
-      | unique) as $relevant_attr_names
-      | semconv_grouped_attributes({"exclude_deprecated": true})
-      | map({root_namespace: .root_namespace, attributes: .attributes | map(select(.name as $n | $relevant_attr_names | index($n))) | select(length > 0)})
-
-  - template: go.mod.j2
-    file_name: "{{ctx.root_namespace}}/go.mod"
-    application_mode: each
-    filter: >
-      semconv_grouped_metrics({"exclude_deprecated": true})
-      | .[]
-      | select (($included_namespaces | length == 0) or (.root_namespace as $ns | $included_namespaces | index($ns)))
   - template: vec.go.j2
     application_mode: each
-    file_name: "{{ctx.root_namespace}}/{{ctx.metric_name | snake_case}}.go"
+    file_name: "{{ctx.root_namespace}}/metric.go"
     filter: >
       semconv_grouped_metrics({"exclude_deprecated": true})
-      | map(.metrics)
-      | flatten
       | .[]
       | select (($included_namespaces | length == 0) or (.root_namespace as $ns | $included_namespaces | index($ns)))
   - template: README.md.j2
@@ -57,6 +31,14 @@ comment_formats:
     shortcut_reference_link: true
     trim: true
     remove_trailing_dots: true
+  go_1tab:
+    format: markdown
+    prefix: "	// "
+    indent_first_level_list_items: true
+    shortcut_reference_link: true
+    trim: true
+    word_wrap:
+      line_length: 80
 default_comment_format: go
 
 text_maps:

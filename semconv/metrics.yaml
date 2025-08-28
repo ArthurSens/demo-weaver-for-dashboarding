@@ -1,0 +1,14 @@
+groups:
+  - id: metric.library.books_indexed
+    type: metric
+    metric_name: library.books_indexed
+    stability: development
+    brief: A counter of the number of books indexed
+    instrument: counter
+    unit: "1"
+    attributes:
+      - ref: library.location
+        requirement_level: required
+imports:
+  metrics:
+  - http.*
