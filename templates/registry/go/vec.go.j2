@@ -97,7 +97,7 @@ func New{{ metric_name }}() {{ metric_name }} {
   }
   return {{metric_name}}{
      {{metric_inst}}Vec: prometheus.New{{metric_inst}}Vec(prometheus.{{metric_inst}}Opts{
-         Name: "{{metric.metric_name | snake_case}}",
+         Name: "{{metric.metric_name }}",
          Help: "{{metric.brief | trim }}",
   }, labels)}
 }
