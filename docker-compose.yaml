@@ -1,0 +1,21 @@
+services:
+  grafana:
+    image: ${REGISTRY:-docker.io}/grafana/grafana:12.1.0
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./config/grafana:/etc/grafana/:Z
+    environment:
+      - GF_LOG_LEVEL=warn
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+  prometheus:
+    image: ${REGISTRY:-docker.io}/prom/prometheus:v3.5.0
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - './config/prometheus.yml:/etc/prometheus/prometheus.yml:Z'
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
