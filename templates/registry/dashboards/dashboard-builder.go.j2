@@ -1,9 +1,10 @@
-package {{ctx.root_namespace | replace("go", "golang")}}
+package main
 {% set metrics = ctx.metrics %}
 
 // Import the appropriate Grafana Foundation SDK packages
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/grafana/grafana-foundation-sdk/go/cog"
@@ -13,9 +14,20 @@ import (
 	"github.com/grafana/grafana-foundation-sdk/go/gauge"
 	{%- endif %}
 	"github.com/grafana/grafana-foundation-sdk/go/prometheus"
+	"github.com/grafana/grafana-foundation-sdk/go/resource"
 	"github.com/grafana/grafana-foundation-sdk/go/timeseries"
 )
 
+func DashboardManifest(dash dashboard.Dashboard) resource.Manifest {
+	return resource.Manifest{
+		ApiVersion: "dashboard.grafana.app/v1beta1",
+		Kind:       "Dashboard",
+		Metadata: resource.Metadata{
+			Name: *dash.Uid,
+		},
+		Spec: dash,
+	}
+}
 
 func main() {
   prometheusDataSourceRef := dashboard.DataSourceRef{
@@ -38,7 +50,7 @@ func main() {
 			Datasource(prometheusDataSourceRef).
 			WithTarget(
 				prometheus.NewDataqueryBuilder().
-					Expr("{{metric.metric_name}}").
+					Expr(`"{"{{metric.metric_name}}"}"`).
 					Range().
 					Format(prometheus.PromQueryFormatTimeSeries).
 					LegendFormat("__auto"),
@@ -51,28 +63,28 @@ func main() {
 			Datasource(prometheusDataSourceRef).
 			WithTarget(
 				prometheus.NewDataqueryBuilder().
-					Expr("histogram_quantile(0.99, rate({{metric.metric_name}}_bucket[$__rate_interval]))").
+					Expr(`histogram_quantile(0.99, rate({"{{metric.metric_name}}_bucket"}[$__rate_interval]))`).
 					Range().
 					Format(prometheus.PromQueryFormatTimeSeries).
 					LegendFormat("p99"),
 			).
 			WithTarget(
 				prometheus.NewDataqueryBuilder().
-					Expr("histogram_quantile(0.90, rate({{metric.metric_name}}_bucket[$__rate_interval]))").
+					Expr(`histogram_quantile(0.90, rate({"{{metric.metric_name}}_bucket"}[$__rate_interval]))`).
 					Range().
 					Format(prometheus.PromQueryFormatTimeSeries).
 					LegendFormat("p90"),
 			).
 			WithTarget(
 				prometheus.NewDataqueryBuilder().
-					Expr("histogram_quantile(0.50, rate({{metric.metric_name}}_bucket[$__rate_interval]))").
+					Expr(`histogram_quantile(0.50, rate({"{{metric.metric_name}}_bucket"}[$__rate_interval]))`).
 					Range().
 					Format(prometheus.PromQueryFormatTimeSeries).
 					LegendFormat("p50"),
 			).
 			WithTarget(
 				prometheus.NewDataqueryBuilder().
-					Expr("rate({{metric.metric_name}}_sum[$__rate_interval]) / rate({{metric.metric_name}}_count[$__rate_interval])").
+					Expr(`rate({"{{metric.metric_name}}_sum"}[$__rate_interval]) / rate({"{{metric.metric_name}}_count"}[$__rate_interval])`).
 					Range().
 					Format(prometheus.PromQueryFormatTimeSeries).
 					LegendFormat("average"),
@@ -85,7 +97,7 @@ func main() {
 			Datasource(prometheusDataSourceRef).
 			WithTarget(
 				prometheus.NewDataqueryBuilder().
-					Expr("sum({{metric.metric_name}})").
+					Expr(`sum({"{{metric.metric_name}}"})`).
 					Range().
 					Format(prometheus.PromQueryFormatTimeSeries).
 					LegendFormat("__auto"),
@@ -98,7 +110,7 @@ func main() {
 			Datasource(prometheusDataSourceRef).
 			WithTarget(
 				prometheus.NewDataqueryBuilder().
-					Expr("rate({{metric.metric_name | snake_case }}[$__rate_interval])").
+					Expr(`rate({"{{metric.metric_name }}"}[$__rate_interval])`).
 					Range().
 					Format(prometheus.PromQueryFormatTimeSeries).
 					LegendFormat("__auto"),
@@ -114,10 +126,9 @@ func main() {
   }
 
   // Output the generated dashboard as JSON
-  dashboardJson, err := json.MarshalIndent(dashboard, "", "  ")
+  dashboardJson, err := json.MarshalIndent(DashboardManifest(dashboard), "", "  ")
   if err != nil {
     log.Fatalf("failed to marshal dashboard: %v", err)
   }
-// CALL Grafana API -X UPDATE DASHBOARD
-  log.Printf(string(dashboardJson))
+  fmt.Println(string(dashboardJson))
 }

@@ -3,7 +3,7 @@ module github.com/ArthurSens/demo-weaver-for-dashboarding
 go 1.24.2
 
 require (
-	github.com/grafana/grafana-foundation-sdk/go v0.0.0-20250310114924-e8eb8530bc7c
+	github.com/grafana/grafana-foundation-sdk/go v0.0.0-20250417132802-1b8d81cc23db
 	github.com/prometheus/client_golang v1.23.0
 )
 
