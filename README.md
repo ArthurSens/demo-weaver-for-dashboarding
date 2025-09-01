@@ -16,8 +16,16 @@ To generate dashboards:
 make dashboards
 ```
 
-## Demo applications
+## Running the demo
 
+### Infrastructure
+
+To set up the demo infrastructure, use `docker-compose` (or `podman-compose`) to bring up an ephemeral deployment of Grafana & Prometheus:
+```
+docker-compose up -d
+```
+
+### Applications
 Run the demo backend application (requires generating the client library first):
 ```
 go run ./applications/backend/main.go
