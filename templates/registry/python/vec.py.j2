@@ -1,0 +1,55 @@
+{% import '../helpers.j2' as h -%}
+{%- set all_attrs = ctx.metrics | map(attribute="attributes") | flatten |  unique(attribute="name") | sort(attribute="name") -%}
+# Code generated from semantic convention specification. DO NOT EDIT.
+
+# Module {{ ctx.root_namespace | camel_case | lower }} provides types and functionality for OpenTelemetry semantic
+# conventions in the "{{ ctx.root_namespace }}" namespace.
+
+import prometheus_client
+from enum import Enum
+
+{% macro for_each_attr(attrs) %}
+    {%- for raw in attrs | sort -%}
+        {%- set attr = namespace(raw) -%}
+        {%- set attr.id = attr.name -%}
+        {%- set attr.namespace = attr.name | attribute_namespace -%}
+        {%- set attr.name = attr.name | attribute_id | pascal_case -%}
+        {%- set attr.arg = attr.name | replace("Type", "Kind") | snake_case -%}
+        {%- set attr.fullname = (attr.id | pascal_case) if attr.namespace != ctx.root_namespace else attr.name -%}
+        {%- set attr.pkg = attr.namespace+"." if attr.namespace != ctx.root_namespace else "" -%}
+        {%- set attr.type = attr.fullname+"Attr" -%}
+        {%- set attr.ref = attr.pkg+attr.type -%}
+        {%- set attr.getter = attr.id|pascal_case -%}
+        {%- set attr.field = "Attr"+attr.fullname -%}
+        {{ caller(attr) }}
+    {%- endfor -%}
+{% endmacro%}
+
+{% for metric in ctx.metrics %}
+{%- set metric_name = h.to_go_name(metric.metric_name, ctx.root_namespace) %}
+{%- set metric_inst = metric.instrument | map_text("python_instrument_type") %}
+{%- set metric_attr = metric.attributes | sort %}
+
+{{ h.metric_typedoc(metric, ctx.root_namespace) | comment | trim }}
+class {{ metric_name }}():
+  __instr = prometheus_client.{{metric_inst}}("{{metric.metric_name}}","{{metric.brief}}",[
+{%- call(attr) for_each_attr(metric_attr) %}
+      "{{attr.id}}",
+{%- endcall %}
+    ])
+
+  def with_attr(
+    self,
+  {%- call(attr) for_each_attr(metric_attr|required) %}
+    {{attr.arg}},
+  {%- endcall %}
+  {%- call(attr) for_each_attr(metric_attr|not_required) %}
+    {{attr.arg}} = None,
+  {%- endcall %}
+  ):
+    return self.__instr.labels(
+  {%- call(attr) for_each_attr(metric_attr) %}
+      {{attr.arg}} if {{attr.arg}} is not None else "",
+  {%- endcall %}
+    )
+{% endfor %}
