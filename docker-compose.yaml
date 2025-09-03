@@ -1,6 +1,6 @@
 services:
   grafana:
-    image: ${REGISTRY:-docker.io}/grafana/grafana:12.1.0
+    image: ${REGISTRY:-docker.io}/grafana/grafana:main
     restart: unless-stopped
     ports:
       - "3000:3000"
