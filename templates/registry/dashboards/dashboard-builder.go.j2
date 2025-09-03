@@ -1,5 +1,7 @@
+{% import 'helpers.j2' as h -%}
 package main
 {% set metrics = ctx.metrics %}
+{%- set all_required_attrs = ctx.metrics | map(attribute="attributes") | flatten | required | unique(attribute="name") | sort(attribute="name") -%}
 
 // Import the appropriate Grafana Foundation SDK packages
 import (
@@ -42,6 +44,16 @@ func main() {
 	Refresh("5m").
 	Time("now-1h", "now").
 	Timezone(common.TimeZoneBrowser).
+  {%- for attr in all_required_attrs %}
+  WithVariable(
+    dashboard.NewQueryVariableBuilder("{{ h.to_go_name(attr.name, ctx.root_namespace) }}").
+      Datasource(prometheusDataSourceRef).
+      IncludeAll(true).
+      AllValue(".*").
+      Query(dashboard.StringOrMap{
+        String: cog.ToPtr(`label_values({{ attr.name }})`),
+  })).
+  {%- endfor -%}
 	{%- for metric in metrics %}
 	{%- if metric.instrument == "gauge" %}
 	WithPanel(
@@ -50,7 +62,12 @@ func main() {
 			Datasource(prometheusDataSourceRef).
 			WithTarget(
 				prometheus.NewDataqueryBuilder().
-					Expr(`"{"{{metric.metric_name}}"}"`).
+					Expr(`sum({
+                  "{{metric.metric_name}}"
+									{%- for attr in metric.attributes | required %}
+									, "{{attr.name}}"=~"${{ h.to_go_name(attr.name,ctx.root_namespace) }}"
+									{%- endfor -%}
+          }) by ({{ metric.attributes | required | map(attribute="name") | map('tojson') | join(',') }})`).
 					Range().
 					Format(prometheus.PromQueryFormatTimeSeries).
 					LegendFormat("__auto"),
@@ -61,33 +78,40 @@ func main() {
 		timeseries.NewPanelBuilder().
 			Title("{{metric.brief | replace('\n', '\\n') | replace('"', '\\"')}}").
 			Datasource(prometheusDataSourceRef).
+      {%- for percentile in ['99','90','50'] %}
 			WithTarget(
 				prometheus.NewDataqueryBuilder().
-					Expr(`histogram_quantile(0.99, rate({"{{metric.metric_name}}_bucket"}[$__rate_interval]))`).
+					Expr(`histogram_quantile(0.{{percentile}}, sum(
+							rate({
+                "{{metric.metric_name}}_bucket"
+                {%- for attr in metric.attributes | required %}
+                , "{{attr.name}}"=~"${{ h.to_go_name(attr.name,ctx.root_namespace) }}"
+                {%- endfor -%}
+              }[$__rate_interval])
+						) by (le,{{ metric.attributes | required | map(attribute="name") | map('tojson') | join(',') }}))`).
 					Range().
 					Format(prometheus.PromQueryFormatTimeSeries).
-					LegendFormat("p99"),
+					LegendFormat("p{{ percentile }}{% for attr in metric.attributes | required %} - {{ '{{' }}{{ attr.name }}{{ '}}' }} {%- endfor-%}"),
 			).
+      {%- endfor %}
 			WithTarget(
 				prometheus.NewDataqueryBuilder().
-					Expr(`histogram_quantile(0.90, rate({"{{metric.metric_name}}_bucket"}[$__rate_interval]))`).
+					Expr(`sum(rate({
+								"{{metric.metric_name}}_sum"
+								 {%- for attr in metric.attributes | required %}
+								 , "{{attr.name}}"=~"${{ h.to_go_name(attr.name,ctx.root_namespace) }}"
+								 {%- endfor -%}
+              }[$__rate_interval])) by ({{ metric.attributes | required | map(attribute="name") | map('tojson') | join(',') }})
+              /
+              sum(rate({
+                "{{metric.metric_name}}_count"
+								 {%- for attr in metric.attributes | required %}
+								 , "{{attr.name}}"=~"${{ h.to_go_name(attr.name,ctx.root_namespace) }}"
+								 {%- endfor -%}
+              }[$__rate_interval])) by ({{ metric.attributes | required | map(attribute="name") | map('tojson') | join(',') }})`).
 					Range().
 					Format(prometheus.PromQueryFormatTimeSeries).
-					LegendFormat("p90"),
-			).
-			WithTarget(
-				prometheus.NewDataqueryBuilder().
-					Expr(`histogram_quantile(0.50, rate({"{{metric.metric_name}}_bucket"}[$__rate_interval]))`).
-					Range().
-					Format(prometheus.PromQueryFormatTimeSeries).
-					LegendFormat("p50"),
-			).
-			WithTarget(
-				prometheus.NewDataqueryBuilder().
-					Expr(`rate({"{{metric.metric_name}}_sum"}[$__rate_interval]) / rate({"{{metric.metric_name}}_count"}[$__rate_interval])`).
-					Range().
-					Format(prometheus.PromQueryFormatTimeSeries).
-					LegendFormat("average"),
+					LegendFormat("average {{ percentile }}{% for attr in metric.attributes | required %} - {{ '{{' }}{{ attr.name }}{{ '}}' }} {%- endfor-%}"),
 			),
 	){% if not loop.last %}.{% endif %}
 	{%- elif metric.instrument == "updowncounter" %}
@@ -97,7 +121,12 @@ func main() {
 			Datasource(prometheusDataSourceRef).
 			WithTarget(
 				prometheus.NewDataqueryBuilder().
-					Expr(`sum({"{{metric.metric_name}}"})`).
+					Expr(`sum({
+            "{{metric.metric_name}}"
+						 {%- for attr in metric.attributes | required %}
+						 , "{{attr.name}}"=~"${{ h.to_go_name(attr.name,ctx.root_namespace) }}"
+						 {%- endfor -%}
+          }) by ({{ metric.attributes | required | map(attribute="name") | map('tojson') | join(',') }})`).
 					Range().
 					Format(prometheus.PromQueryFormatTimeSeries).
 					LegendFormat("__auto"),
@@ -110,7 +139,12 @@ func main() {
 			Datasource(prometheusDataSourceRef).
 			WithTarget(
 				prometheus.NewDataqueryBuilder().
-					Expr(`rate({"{{metric.metric_name }}"}[$__rate_interval])`).
+					Expr(`sum(rate({
+            "{{metric.metric_name }}",
+						 {%- for attr in metric.attributes | required %}
+						 , "{{attr.name}}"=~"${{ h.to_go_name(attr.name,ctx.root_namespace) }}"
+						 {%- endfor -%}
+          }[$__rate_interval])) by ({{ metric.attributes | required | map(attribute="name") | map('tojson') | join(',') }})`).
 					Range().
 					Format(prometheus.PromQueryFormatTimeSeries).
 					LegendFormat("__auto"),

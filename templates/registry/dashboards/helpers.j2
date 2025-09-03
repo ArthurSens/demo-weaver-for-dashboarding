@@ -1,0 +1,28 @@
+{%- macro repl(text) -%}
+{#- Copied from semconvgen: https://github.com/open-telemetry/opentelemetry-go-build-tools/blob/3e69152c51c56213b65c0fc6e5954293b522103c/semconvgen/generator.go#L419-L426 -#}
+{{ text | replace("RedisDatabase", "RedisDB") | replace("IPTCP", "TCP") | replace("IPUDP", "UDP") | replace("Lineno", "LineNumber") }}
+{%- endmacro -%}
+  
+{%- macro smart_title_case(text) -%}
+{%- for i in range(0, text | length) -%}
+    {%- if i == 0 or text[i-1] in ['.', '_'] -%}
+        {{ text[i] | upper }}
+    {%- elif not text[i] in ['.', '_'] -%}
+        {{ text[i] }}
+    {%- endif -%}
+{%- endfor -%}
+{%- endmacro -%}
+
+{%- macro to_go_name(fqn="", pkg="") -%}
+{%- if pkg != "" and fqn != pkg -%}
+{%- set n = pkg | length -%}
+{%- if pkg == fqn[:n] -%}
+{%- set fqn = fqn[n:] -%}
+{%- if fqn[0] == "." or fqn[0] == "." -%}
+{%- set fqn = fqn[1:] -%}
+{%- endif -%}
+{%- endif -%}
+{%- endif -%}
+{{ repl(smart_title_case(fqn | replace(" ", "") | replace("_", ".") | acronym)) }}
+{%- endmacro -%}
+
