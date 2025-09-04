@@ -2,12 +2,24 @@ groups:
   - id: metric.library.books_indexed
     type: metric
     metric_name: library.books_indexed
-    stability: development
+    stability: stable
     brief: A counter of the number of books indexed
     instrument: counter
     unit: "1"
     attributes:
       - ref: library.location
+        requirement_level: required
+  - id: metric.library.books
+    type: metric
+    metric_name: library.books
+    stability: stable
+    brief: Number of books by status
+    instrument: updowncounter
+    unit: "1"
+    attributes:
+      - ref: library.location
+        requirement_level: required
+      - ref: library.book_status
         requirement_level: required
 imports:
   metrics:
