@@ -15,3 +15,13 @@ client-python:
 .PHONY: dashboards
 dashboards:
 	$(PODMAN) run -it --rm -v $(PWD):/work:Z -u 0 --workdir /work otel/weaver registry generate -r ./semconv/ dashboards ./generated/dashboards
+
+
+GITHUB_REPO=ArthurSens/demo-weaver-for-dashboarding
+.PHONY: check
+check:
+	$(PODMAN) run -it --rm -v $(PWD):/work:Z -u 0 --workdir /work otel/weaver \
+	registry check \
+	-r ./semconv/ \
+  --baseline-registry https://github.com/${GITHUB_REPO}/archive/refs/heads/main.zip[semconv] \
+	--future --policy ./semconv/policies
