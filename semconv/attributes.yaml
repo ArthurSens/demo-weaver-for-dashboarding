@@ -7,5 +7,18 @@ groups:
       - id: library.location
         type: string
         brief: Location identifier of the library
-        stability: development
+        stability: stable
         examples: ["Vienna/1110"]
+      - id: library.book_status
+        type:
+          members:
+            - id: available
+              value: "available"
+              brief: 'available for borrowing.'
+              stability: stable
+            - id: borrowed
+              value: "borrowed"
+              brief: 'currently borrowed by a user.'
+              stability: stable
+        brief: State of the book
+        stability: stable
