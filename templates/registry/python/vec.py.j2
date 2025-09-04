@@ -1,4 +1,4 @@
-{% import '../helpers.j2' as h -%}
+{% import 'helpers.j2' as h -%}
 {%- set all_attrs = ctx.metrics | map(attribute="attributes") | flatten |  unique(attribute="name") | sort(attribute="name") -%}
 # Code generated from semantic convention specification. DO NOT EDIT.
 
