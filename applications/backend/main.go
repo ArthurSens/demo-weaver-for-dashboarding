@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"log/slog"
 	"net/http"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	httpconv "github.com/ArthurSens/demo-weaver-for-dashboarding/generated/client/go/http"
+	libconv "github.com/ArthurSens/demo-weaver-for-dashboarding/generated/client/go/library"
 )
 
 type Book struct {
@@ -21,7 +23,10 @@ type Book struct {
 	ReturnedAt time.Time `json:"returned_at,omitzero"`
 }
 
+var location = flag.String("location", "Vienna/1110", "location of the library backend")
+
 func main() {
+	flag.Parse()
 	books := map[string]*Book{
 		"dcc": {
 			ID:         "dcc",
@@ -48,10 +53,19 @@ func main() {
 			requestDurations.With(httpconv.RequestMethodAttr(r.Method), httpconv.UrlSchemeAttr("http"), httpconv.RouteAttr(r.Pattern)).Observe(float64(time.Since(start).Seconds()))
 		})
 	}
+
+	booksIndexed := libconv.NewBooksIndexed()
+	prometheus.Register(booksIndexed)
+	booksIndexed.With(libconv.LocationAttr(*location)).Add(float64(len(books)))
+
+	bookStatus := libconv.NewBooks()
+	bookStatus.With(libconv.LocationAttr(*location), libconv.BookStatusAvailable).Add(float64(len(books)))
+	prometheus.Register(bookStatus)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /books", HandleGetBooks(books))
-	mux.HandleFunc("POST /books/{id}/borrow", HandlePostBorrow(books))
-	mux.HandleFunc("POST /books/{id}/return", HandlePostReturn(books))
+	mux.HandleFunc("POST /books/{id}/borrow", HandlePostBorrow(books, &bookStatus))
+	mux.HandleFunc("POST /books/{id}/return", HandlePostReturn(books, &bookStatus))
 	mux.HandleFunc("POST /books/", HandlePostBooks(books))
 	mux.Handle("GET /metrics", promhttp.Handler())
 	slog.Info("starting backend server", "addr", ":8080")
@@ -71,7 +85,7 @@ func HandleGetBooks(books map[string]*Book) http.HandlerFunc {
 	}
 }
 
-func HandlePostBorrow(books map[string]*Book) http.HandlerFunc {
+func HandlePostBorrow(books map[string]*Book, bookStatus *libconv.Books) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
 		_, ok := books[id]
@@ -85,9 +99,11 @@ func HandlePostBorrow(books map[string]*Book) http.HandlerFunc {
 		}
 		books[id].BorrowedAt = time.Now()
 		w.WriteHeader(http.StatusAccepted)
+		bookStatus.With(libconv.LocationAttr(*location), libconv.BookStatusBorrowed).Inc()
+		bookStatus.With(libconv.LocationAttr(*location), libconv.BookStatusAvailable).Dec()
 	}
 }
-func HandlePostReturn(books map[string]*Book) http.HandlerFunc {
+func HandlePostReturn(books map[string]*Book, bookStatus *libconv.Books) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
 		_, ok := books[id]
@@ -100,6 +116,8 @@ func HandlePostReturn(books map[string]*Book) http.HandlerFunc {
 		books[id].BorrowedAt = time.Time{}
 		books[id].ReturnedAt = time.Now()
 		w.WriteHeader(http.StatusAccepted)
+		bookStatus.With(libconv.LocationAttr(*location), libconv.BookStatusAvailable).Inc()
+		bookStatus.With(libconv.LocationAttr(*location), libconv.BookStatusBorrowed).Dec()
 	}
 }
 
