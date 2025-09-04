@@ -4,6 +4,8 @@ from prometheus_client import make_wsgi_app
 from o11y_lib import http
 import requests
 import time
+import requests.adapters
+from requests.compat import urlparse
 
 app = Flask(__name__)
 app.secret_key = b'a-very-good-secret'
@@ -12,7 +14,23 @@ app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
 })
 
 durations = http.ServerRequestDuration()
+clientDurations = http.ClientRequestDuration()
 
+
+class ObservedClient(requests.adapters.HTTPAdapter):
+  def send(
+          self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None
+  ):
+      parsed_request_url = urlparse(request.url)
+      start = time.time()
+      resp = super().send(request,stream,timeout,verify,cert,proxies)
+      clientDurations.with_attr(request.method,parsed_request_url.hostname,parsed_request_url.port,response_status_code=resp.status_code).observe(time.time() - start)
+      return resp
+
+httpClient = requests.Session()
+httpClient.mount("http://",ObservedClient())
+httpClient.mount("https://",ObservedClient())
+  
 @app.before_request
 def start_timer():
     g.method = request.method
@@ -26,7 +44,7 @@ def log_details(response: Response):
     return response
 
 def get_books():
-    response = requests.get("http://localhost:8080/books")
+    response = httpClient.get("http://localhost:8080/books")
     return response.json()
 
 @app.route("/")
@@ -36,12 +54,12 @@ def list_books():
 
 @app.route("/books/<book_id>/borrow",methods=["POST"])
 def borrow_book(book_id):
-    requests.post(f"http://localhost:8080/books/{book_id}/borrow")
+    httpClient.post(f"http://localhost:8080/books/{book_id}/borrow")
     flash("Book borrowed!","info")
     return redirect('/')
 
 @app.route("/books/<book_id>/return",methods=["POST"])
 def return_book(book_id):
-    requests.post(f"http://localhost:8080/books/{book_id}/return")
+    httpClient.post(f"http://localhost:8080/books/{book_id}/return")
     flash("Book returned!","info")
     return redirect('/')
