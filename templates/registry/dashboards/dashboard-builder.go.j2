@@ -3,6 +3,25 @@ package main
 {% set metrics = ctx.metrics %}
 {%- set all_required_attrs = ctx.metrics | map(attribute="attributes") | flatten | required | unique(attribute="name") | sort(attribute="name") -%}
 
+{%- set extra_label_selectors %}
+{%- for name in params.extra_labels %}
+, "{{ name }}"=~"${{name}}"
+{% endfor -%}
+{%- endset -%}
+
+{%- set extra_label_legend -%}
+{%- if params.extra_labels | length > 0 -%}
+[{%- for l in params.extra_labels -%}
+{{ l }}={{ '{{' }}{{l}}{{'}}'}}
+{%- if not loop.last -%}
+,
+{%- endif -%}
+{%- endfor -%}
+]
+{%- endif -%}
+{%- endset -%}
+
+{%- set extra_label_group = params.extra_labels | map('tojson') | join(',') -%}
 // Import the appropriate Grafana Foundation SDK packages
 import (
 	"encoding/json"
@@ -54,6 +73,16 @@ func main() {
         String: cog.ToPtr(`label_values({{ attr.name }})`),
   })).
   {%- endfor -%}
+  {%- for attr in params.extra_labels %}
+  WithVariable(
+    dashboard.NewQueryVariableBuilder("{{ attr }}").
+      Datasource(prometheusDataSourceRef).
+      IncludeAll(true).
+      AllValue(".*").
+      Query(dashboard.StringOrMap{
+        String: cog.ToPtr(`label_values({{ attr }})`),
+  })).
+  {%- endfor -%}
 	{%- for metric in metrics %}
 	{%- if metric.instrument == "gauge" %}
 	WithPanel(
@@ -62,12 +91,13 @@ func main() {
 			Datasource(prometheusDataSourceRef).
 			WithTarget(
 				prometheus.NewDataqueryBuilder().
-					Expr(`sum({
+					Expr(`{
                   "{{metric.metric_name}}"
 									{%- for attr in metric.attributes | required %}
 									, "{{attr.name}}"=~"${{ h.to_go_name(attr.name,ctx.root_namespace) }}"
 									{%- endfor -%}
-          }) by ({{ metric.attributes | required | map(attribute="name") | map('tojson') | join(',') }})`).
+                  {{ extra_label_selectors }}
+          }`).
 					Range().
 					Format(prometheus.PromQueryFormatTimeSeries).
 					LegendFormat("__auto"),
@@ -87,11 +117,12 @@ func main() {
                 {%- for attr in metric.attributes | required %}
                 , "{{attr.name}}"=~"${{ h.to_go_name(attr.name,ctx.root_namespace) }}"
                 {%- endfor -%}
+                {{extra_label_selectors}}
               }[$__rate_interval])
-						) by (le,{{ metric.attributes | required | map(attribute="name") | map('tojson') | join(',') }}))`).
+						) by (le,{{ metric.attributes | required | map(attribute="name") | map('tojson') | join(',') }}, {{extra_label_group}}))`).
 					Range().
 					Format(prometheus.PromQueryFormatTimeSeries).
-					LegendFormat("p{{ percentile }}{% for attr in metric.attributes | required %} - {{ '{{' }}{{ attr.name }}{{ '}}' }} {%- endfor-%}"),
+					LegendFormat("p{{ percentile }}{{extra_label_legend}}{% for attr in metric.attributes | required %} - {{ '{{' }}{{ attr.name }}{{ '}}' }} {%- endfor-%}"),
 			).
       {%- endfor %}
 			WithTarget(
@@ -101,17 +132,17 @@ func main() {
 								 {%- for attr in metric.attributes | required %}
 								 , "{{attr.name}}"=~"${{ h.to_go_name(attr.name,ctx.root_namespace) }}"
 								 {%- endfor -%}
-              }[$__rate_interval])) by ({{ metric.attributes | required | map(attribute="name") | map('tojson') | join(',') }})
+              }[$__rate_interval])) by ({{ metric.attributes | required | map(attribute="name") | map('tojson') | join(',') }},{{extra_label_group}})
               /
               sum(rate({
                 "{{metric.metric_name}}_count"
 								 {%- for attr in metric.attributes | required %}
 								 , "{{attr.name}}"=~"${{ h.to_go_name(attr.name,ctx.root_namespace) }}"
 								 {%- endfor -%}
-              }[$__rate_interval])) by ({{ metric.attributes | required | map(attribute="name") | map('tojson') | join(',') }})`).
+              }[$__rate_interval])) by ({{ metric.attributes | required | map(attribute="name") | map('tojson') | join(',') }},{{extra_label_group}})`).
 					Range().
 					Format(prometheus.PromQueryFormatTimeSeries).
-					LegendFormat("average {{ percentile }}{% for attr in metric.attributes | required %} - {{ '{{' }}{{ attr.name }}{{ '}}' }} {%- endfor-%}"),
+					LegendFormat("average{{ extra_label_legend }}{% for attr in metric.attributes | required %} - {{ '{{' }}{{ attr.name }}{{ '}}' }} {%- endfor-%}"),
 			),
 	){% if not loop.last %}.{% endif %}
 	{%- elif metric.instrument == "updowncounter" %}
@@ -126,7 +157,8 @@ func main() {
 						 {%- for attr in metric.attributes | required %}
 						 , "{{attr.name}}"=~"${{ h.to_go_name(attr.name,ctx.root_namespace) }}"
 						 {%- endfor -%}
-          }) by ({{ metric.attributes | required | map(attribute="name") | map('tojson') | join(',') }})`).
+             {{ extra_label_selectors }}
+          }) by ({{ metric.attributes | required | map(attribute="name") | map('tojson') | join(',') }},{{extra_label_group}})`).
 					Range().
 					Format(prometheus.PromQueryFormatTimeSeries).
 					LegendFormat("__auto"),
@@ -140,11 +172,12 @@ func main() {
 			WithTarget(
 				prometheus.NewDataqueryBuilder().
 					Expr(`sum(rate({
-            "{{metric.metric_name }}",
+            "{{metric.metric_name }}"
 						 {%- for attr in metric.attributes | required %}
 						 , "{{attr.name}}"=~"${{ h.to_go_name(attr.name,ctx.root_namespace) }}"
 						 {%- endfor -%}
-          }[$__rate_interval])) by ({{ metric.attributes | required | map(attribute="name") | map('tojson') | join(',') }})`).
+             {{ extra_label_selectors }}
+          }[$__rate_interval])) by ({{ metric.attributes | required | map(attribute="name") | map('tojson') | join(',') }},{{extra_label_group}})`).
 					Range().
 					Format(prometheus.PromQueryFormatTimeSeries).
 					LegendFormat("__auto"),
@@ -166,3 +199,7 @@ func main() {
   }
   fmt.Println(string(dashboardJson))
 }
+
+  /*
+  {{ params.extra_labels }}
+  */
