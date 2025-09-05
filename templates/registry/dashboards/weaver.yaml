@@ -3,6 +3,8 @@ params:
   # e.g. `weaver registry generate  --registry=../semantic-conventions/model --templates=./templates dashboards ./output --param included_namespaces="db,http"`
   # TODO -param as string slightly buggy - string inclusion is not the same as exact match with list element
   included_namespaces: []
+  extra_labels:
+  - 'app'
 
 templates:
   - template: dashboard-builder.go.j2
