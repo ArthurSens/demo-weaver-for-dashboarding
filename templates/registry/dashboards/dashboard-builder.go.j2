@@ -1,5 +1,5 @@
 {% import 'helpers.j2' as h -%}
-package main
+package {{ctx.root_namespace}}
 {% set metrics = ctx.metrics %}
 {%- set all_required_attrs = ctx.metrics | map(attribute="attributes") | flatten | required | unique(attribute="name") | sort(attribute="name") -%}
 
@@ -24,9 +24,9 @@ package main
 {%- set extra_label_group = params.extra_labels | map('tojson') | join(',') -%}
 // Import the appropriate Grafana Foundation SDK packages
 import (
-	"encoding/json"
-	"fmt"
 	"log"
+
+  "github.com/ArthurSens/demo-weaver-for-dashboarding/dashboards/index"
 
 	"github.com/grafana/grafana-foundation-sdk/go/cog"
 	"github.com/grafana/grafana-foundation-sdk/go/common"
@@ -39,6 +39,10 @@ import (
 	"github.com/grafana/grafana-foundation-sdk/go/timeseries"
 )
 
+func init() {
+  index.Dashboards = append(index.Dashboards,Build())
+}
+
 func DashboardManifest(dash dashboard.Dashboard) resource.Manifest {
 	return resource.Manifest{
 		ApiVersion: "dashboard.grafana.app/v1beta1",
@@ -50,7 +54,7 @@ func DashboardManifest(dash dashboard.Dashboard) resource.Manifest {
 	}
 }
 
-func main() {
+func Build() resource.Manifest {
   prometheusDataSourceRef := dashboard.DataSourceRef{
 	Type: cog.ToPtr("prometheus"),
     Uid:  cog.ToPtr("prometheus"),
@@ -191,15 +195,5 @@ func main() {
   if err != nil {
     log.Fatalf("failed to build dashboard: %v", err)
   }
-
-  // Output the generated dashboard as JSON
-  dashboardJson, err := json.MarshalIndent(DashboardManifest(dashboard), "", "  ")
-  if err != nil {
-    log.Fatalf("failed to marshal dashboard: %v", err)
-  }
-  fmt.Println(string(dashboardJson))
+  return DashboardManifest(dashboard)
 }
-
-  /*
-  {{ params.extra_labels }}
-  */
