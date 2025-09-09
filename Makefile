@@ -13,5 +13,11 @@ client-go:
 client-python:
 	$(PODMAN) run -it --rm -v $(PWD):/work:Z -u 0 --workdir /work otel/weaver registry generate -r ./semconv/ python ./generated/client/python 
 .PHONY: dashboards
-dashboards:
+dashboards: foundation-dashboards
+	go run ./dashboards/
+.PHONY: foundation-dashboards
+foundation-dashboards:
 	$(PODMAN) run -it --rm -v $(PWD):/work:Z -u 0 --workdir /work otel/weaver registry generate -r ./semconv/ dashboards ./generated/dashboards
+.PHONY: watch-dashboards
+watch-dashboards: dashboards
+	grafanactl resources serve ./generated/dashboards_json --port 8181
